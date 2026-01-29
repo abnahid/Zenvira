@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(uuid())
+  name      String
+  email     String     @unique
+  password  String
+  role      Role
+  image     String
+  status    String     @default("active")
+  createdAt DateTime   @default(now())
+  medicines Medicine[]
+  orders    Order[]
+  reviews   Review[]
+}
+
+model Category {
+  id        String     @id @default(uuid())
+  name      String
+  slug      String     @unique
+  medicines Medicine[]
+}
+
+model Medicine {
+  id           String      @id @default(uuid())
+  name         String
+  slug         String      @unique
+  price        Float
+  stock        Int
+  description  String
+  manufacturer String
+  status       String      @default("active")
+  sellerId     String
+  categoryId   String
+  createdAt    DateTime    @default(now())
+  images       String[]
+  category     Category    @relation(fields: [categoryId], references: [id])
+  seller       User        @relation(fields: [sellerId], references: [id])
+  orders       OrderItem[]
+  reviews      Review[]
+}
+
+model Order {
+  id         String      @id @default(uuid())
+  total      Float
+  status     String      @default("placed")
+  address    String
+  createdAt  DateTime    @default(now())
+  customerId String
+  customer   User        @relation(fields: [customerId], references: [id])
+  items      OrderItem[]
+}
+
+model OrderItem {
+  id         String   @id @default(uuid())
+  quantity   Int
+  price      Float
+  orderId    String
+  medicineId String
+  medicine   Medicine @relation(fields: [medicineId], references: [id])
+  order      Order    @relation(fields: [orderId], references: [id])
+}
+
+model Review {
+  id         String   @id @default(uuid())
+  rating     Int
+  comment    String
+  createdAt  DateTime @default(now())
+  userId     String
+  medicineId String
+  medicine   Medicine @relation(fields: [medicineId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+}
+
+enum Role {
+  customer
+  seller
+  admin
+}
