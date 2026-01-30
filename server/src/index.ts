@@ -1,17 +1,27 @@
-import { PrismaClient } from "@prisma/client";
+import { toNodeHandler } from "better-auth/node";
 import cors from "cors";
 import dotenv from "dotenv";
 import type { Request, Response } from "express";
 import express from "express";
-import medicineRoutes from "./routes/medicine.routes.ts";
+import { auth } from "./lib/auth.js";
+import medicineRoutes from "./routes/medicine.routes.js";
 
 dotenv.config();
 
-const prisma = new PrismaClient();
-
 const app = express();
-app.use(cors());
+
+app.use(
+  cors({
+    origin: process.env.TRUSTED_ORIGIN || "http://localhost:3000",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 app.use(express.json());
+
+// Handle better-auth routes
+app.all("/api/auth/*splat", toNodeHandler(auth));
 
 app.get("/health", (req: Request, res: Response) => {
   res.json({ status: "ok", service: "MediStore API" });
@@ -19,6 +29,21 @@ app.get("/health", (req: Request, res: Response) => {
 
 app.use("/api/medicines", medicineRoutes);
 
-app.listen(5000, () => {
-  console.log("Server running on http://localhost:5000");
+// Error handling middleware (last)
+app.use((err: any, req: Request, res: Response, next: any) => {
+  console.error("Error:", err);
+  res.status(500).json({ success: false, message: "Internal server error" });
 });
+
+app.listen(5000, () => {
+  console.log("🚀 Server running on http://localhost:5000");
+  console.log("📧 API endpoints:");
+  console.log("   - POST /api/auth/sign-up/email");
+  console.log("   - POST /api/auth/sign-in/email");
+  console.log("   - POST /api/auth/sign-out");
+  console.log("   - GET /api/auth/session");
+  console.log("   - GET /api/medicines");
+  console.log("   - GET /health");
+});
+
+export default app;
