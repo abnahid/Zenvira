@@ -1,5 +1,10 @@
+"use client";
+
+import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { FaHeart, FaSearchPlus, FaShoppingCart } from "react-icons/fa";
 
 type Category = {
@@ -39,9 +44,54 @@ type ProductCardProps = {
 };
 
 const ProductCard = ({ product, viewType = "grid" }: ProductCardProps) => {
+  const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+
   // Default rating (you can add actual rating data to your API)
   const rating = 4.5;
   const reviewCount = 14;
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (product.stock === 0) return;
+
+    setIsAddingToCart(true);
+    addToCart({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      price: product.price,
+      image: product.images[0] || "/placeholder.png",
+      stock: product.stock,
+      quantity: 1,
+    });
+
+    setTimeout(() => setIsAddingToCart(false), 500);
+  };
+
+  const handleToggleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (isInWishlist(product.id)) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist({
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        price: product.price,
+        image: product.images[0] || "/placeholder.png",
+        stock: product.stock,
+        category: product.category.name,
+      });
+    }
+  };
+
+  const inWishlist = isInWishlist(product.id);
 
   if (viewType === "list") {
     return (
@@ -119,17 +169,34 @@ const ProductCard = ({ product, viewType = "grid" }: ProductCardProps) => {
 
             {/* Action Buttons */}
             <div className="flex gap-3">
-              <button className="p-2 border rounded-lg text-gray-600 hover:bg-primary hover:text-white transition">
+              <button
+                onClick={handleAddToCart}
+                disabled={product.stock === 0 || isAddingToCart}
+                className="p-2 border rounded-lg text-gray-600 hover:bg-primary hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
+                title={product.stock === 0 ? "Out of stock" : "Add to cart"}
+              >
                 <FaShoppingCart size={16} />
               </button>
 
-              <button className="p-2 border rounded-lg text-gray-600 hover:bg-primary hover:text-white transition">
+              <button
+                onClick={handleToggleWishlist}
+                className={`p-2 border rounded-lg transition ${
+                  inWishlist
+                    ? "bg-red-500 text-white border-red-500"
+                    : "text-gray-600 hover:bg-primary hover:text-white"
+                }`}
+                title={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
+              >
                 <FaHeart size={16} />
               </button>
 
-              <button className="p-2 border rounded-lg text-gray-600 hover:bg-primary hover:text-white transition">
+              <Link
+                href={`/shops/${product.slug}`}
+                className="p-2 border rounded-lg text-gray-600 hover:bg-primary hover:text-white transition"
+                title="View details"
+              >
                 <FaSearchPlus size={16} />
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -168,17 +235,34 @@ const ProductCard = ({ product, viewType = "grid" }: ProductCardProps) => {
 
         {/* Hover Icons */}
         <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 translate-x-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0">
-          <button className="w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-700 hover:bg-primary hover:text-white transition">
+          <button
+            onClick={handleAddToCart}
+            disabled={product.stock === 0 || isAddingToCart}
+            className="w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-700 hover:bg-primary hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
+            title={product.stock === 0 ? "Out of stock" : "Add to cart"}
+          >
             <FaShoppingCart size={14} />
           </button>
 
-          <button className="w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-700 hover:bg-primary hover:text-white transition">
+          <button
+            onClick={handleToggleWishlist}
+            className={`w-9 h-9 rounded-full flex items-center justify-center transition ${
+              inWishlist
+                ? "bg-red-500 text-white"
+                : "bg-white text-gray-700 hover:bg-primary hover:text-white"
+            }`}
+            title={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
+          >
             <FaHeart size={14} />
           </button>
 
-          <button className="w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-700 hover:bg-primary hover:text-white transition">
+          <Link
+            href={`/shops/${product.slug}`}
+            className="w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-700 hover:bg-primary hover:text-white transition"
+            title="View details"
+          >
             <FaSearchPlus size={14} />
-          </button>
+          </Link>
         </div>
       </div>
 

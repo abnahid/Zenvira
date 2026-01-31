@@ -2,26 +2,40 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/context/AuthContext";
+import { useCart } from "@/context/CartContext";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaFacebookF, FaPinterestP, FaTwitter, FaVimeoV } from "react-icons/fa";
 import {
   FiHeart,
+  FiLogIn,
+  FiLogOut,
   FiMenu,
   FiSearch,
   FiShoppingCart,
   FiUser,
+  FiUserPlus,
   FiX,
 } from "react-icons/fi";
 
 export default function Navbar({ className }: { className?: string }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout, isLoading } = useAuth();
+  const { itemCount } = useCart();
   const isHomePage = pathname === "/";
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,6 +44,19 @@ export default function Navbar({ className }: { className?: string }) {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest(".user-dropdown")) {
+        setUserDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
   // Inner Pages Navbar (Shop, About, Blog, etc.)
@@ -190,19 +217,120 @@ export default function Navbar({ className }: { className?: string }) {
           <div className="flex items-center gap-4">
             {/* Desktop Icons */}
             <div className="hidden md:flex items-center gap-4">
-              <FiUser
-                className="cursor-pointer text-gray-600 hover:text-primary transition"
-                size={20}
-              />
-              <div className="relative">
+              {/* User Dropdown */}
+              <div className="relative user-dropdown">
+                <button
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  className="cursor-pointer text-gray-600 hover:text-primary transition flex items-center gap-2"
+                >
+                  {isMounted && user ? (
+                    <>
+                      <Image
+                        src={
+                          user.image || "https://avatar.iran.liara.run/public/1"
+                        }
+                        alt={user.name}
+                        width={28}
+                        height={28}
+                        className="rounded-full border border-gray-300"
+                      />
+                      <span className="text-sm font-medium text-gray-700 hidden md:inline">
+                        {user.name.split(" ")[0]}
+                      </span>
+                    </>
+                  ) : (
+                    <FiUser size={20} />
+                  )}
+                </button>
+                {userDropdownOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg border py-2 z-50">
+                    {isMounted && user ? (
+                      <>
+                        {/* User Info Header */}
+                        <div className="px-4 py-3 border-b flex items-center gap-3">
+                          <Image
+                            src={
+                              user.image ||
+                              "https://avatar.iran.liara.run/public/1"
+                            }
+                            alt={user.name}
+                            width={40}
+                            height={40}
+                            className="rounded-full border border-gray-300"
+                          />
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-gray-900">
+                              {user.name}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {user.email}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Menu Items */}
+                        <Link
+                          href="/profile"
+                          onClick={() => setUserDropdownOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
+                        >
+                          <FiUser size={16} />
+                          My Profile
+                        </Link>
+                        <Link
+                          href="/orders"
+                          onClick={() => setUserDropdownOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
+                        >
+                          <FiShoppingCart size={16} />
+                          My Orders
+                        </Link>
+                        <button
+                          onClick={() => {
+                            logout();
+                            setUserDropdownOpen(false);
+                            router.push("/");
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition border-t"
+                        >
+                          <FiLogOut size={16} />
+                          Logout
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <Link
+                          href="/login"
+                          onClick={() => setUserDropdownOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
+                        >
+                          <FiLogIn size={16} />
+                          Login
+                        </Link>
+                        <Link
+                          href="/register"
+                          onClick={() => setUserDropdownOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
+                        >
+                          <FiUserPlus size={16} />
+                          Register
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+              <Link href="/cart" className="relative">
                 <FiShoppingCart
                   className="cursor-pointer text-gray-600 hover:text-primary transition"
                   size={20}
                 />
-                <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-white">
-                  0
-                </span>
-              </div>
+                {itemCount > 0 && (
+                  <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-white">
+                    {itemCount}
+                  </span>
+                )}
+              </Link>
             </div>
 
             {/* Mobile Menu Button */}
@@ -254,23 +382,73 @@ export default function Navbar({ className }: { className?: string }) {
 
             {/* Mobile Account Links */}
             <div className="flex items-center justify-around px-4 py-4 border-t bg-gray-50">
-              <div className="flex flex-col items-center gap-1">
-                <FiUser size={20} />
-                <span className="text-xs">Account</span>
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <FiHeart size={20} />
-                <span className="text-xs">Wishlist</span>
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <div className="relative">
-                  <FiShoppingCart size={20} />
-                  <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-white">
-                    0
-                  </span>
-                </div>
-                <span className="text-xs">Cart</span>
-              </div>
+              {isMounted && user ? (
+                <>
+                  <Link
+                    href="/profile"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex flex-col items-center gap-1"
+                  >
+                    <Image
+                      src={
+                        user.image || "https://avatar.iran.liara.run/public/1"
+                      }
+                      alt={user.name}
+                      width={24}
+                      height={24}
+                      className="rounded-full"
+                    />
+                    <span className="text-xs">Profile</span>
+                  </Link>
+                  <Link
+                    href="/orders"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex flex-col items-center gap-1"
+                  >
+                    <FiShoppingCart size={20} />
+                    <span className="text-xs">Orders</span>
+                  </Link>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setMobileMenuOpen(false);
+                      router.push("/");
+                    }}
+                    className="flex flex-col items-center gap-1 text-red-600"
+                  >
+                    <FiLogOut size={20} />
+                    <span className="text-xs">Logout</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex flex-col items-center gap-1"
+                  >
+                    <FiLogIn size={20} />
+                    <span className="text-xs">Login</span>
+                  </Link>
+                  <Link
+                    href="/register"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex flex-col items-center gap-1"
+                  >
+                    <FiUserPlus size={20} />
+                    <span className="text-xs">Register</span>
+                  </Link>
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="relative">
+                      <FiShoppingCart size={20} />
+                      <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-white">
+                        0
+                      </span>
+                    </div>
+                    <span className="text-xs">Cart</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -398,14 +576,115 @@ export default function Navbar({ className }: { className?: string }) {
             </span>
 
             <div className="flex items-center gap-3">
-              <FiUser className="cursor-pointer" />
-              <FiHeart className="cursor-pointer" />
-              <div className="relative">
-                <FiShoppingCart className="cursor-pointer" />
-                <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-white">
-                  0
-                </span>
+              {/* User Dropdown - Top Bar */}
+              <div className="relative user-dropdown">
+                <button
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  className="cursor-pointer hover:text-primary/80 transition flex items-center gap-2"
+                >
+                  {isMounted && user ? (
+                    <>
+                      <Image
+                        src={
+                          user.image || "https://avatar.iran.liara.run/public/1"
+                        }
+                        alt={user.name}
+                        width={24}
+                        height={24}
+                        className="rounded-full border border-gray-300"
+                      />
+                    </>
+                  ) : (
+                    <FiUser />
+                  )}
+                </button>
+                {userDropdownOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg border py-2 z-50">
+                    {isMounted && user ? (
+                      <>
+                        {/* User Info Header */}
+                        <div className="px-4 py-3 border-b flex items-center gap-3">
+                          <Image
+                            src={
+                              user.image ||
+                              "https://avatar.iran.liara.run/public/1"
+                            }
+                            alt={user.name}
+                            width={40}
+                            height={40}
+                            className="rounded-full border border-gray-300"
+                          />
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-gray-900">
+                              {user.name}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {user.email}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Menu Items */}
+                        <Link
+                          href="/profile"
+                          onClick={() => setUserDropdownOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
+                        >
+                          <FiUser size={16} />
+                          My Profile
+                        </Link>
+                        <Link
+                          href="/orders"
+                          onClick={() => setUserDropdownOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
+                        >
+                          <FiShoppingCart size={16} />
+                          My Orders
+                        </Link>
+                        <button
+                          onClick={() => {
+                            logout();
+                            setUserDropdownOpen(false);
+                            router.push("/");
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition border-t"
+                        >
+                          <FiLogOut size={16} />
+                          Logout
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <Link
+                          href="/login"
+                          onClick={() => setUserDropdownOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
+                        >
+                          <FiLogIn size={16} />
+                          Login
+                        </Link>
+                        <Link
+                          href="/register"
+                          onClick={() => setUserDropdownOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
+                        >
+                          <FiUserPlus size={16} />
+                          Register
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
+              <FiHeart className="cursor-pointer" />
+              <Link href="/cart" className="relative">
+                <FiShoppingCart className="cursor-pointer" />
+                {itemCount > 0 && (
+                  <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-white">
+                    {itemCount}
+                  </span>
+                )}
+              </Link>
             </div>
           </div>
         </div>
@@ -442,12 +721,14 @@ export default function Navbar({ className }: { className?: string }) {
         {/* Mobile Icons */}
         <div className="flex items-center gap-3 md:hidden">
           <FiSearch className="cursor-pointer" size={20} />
-          <div className="relative">
+          <Link href="/cart" className="relative">
             <FiShoppingCart className="cursor-pointer" size={20} />
-            <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-white">
-              0
-            </span>
-          </div>
+            {itemCount > 0 && (
+              <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-white">
+                {itemCount}
+              </span>
+            )}
+          </Link>
         </div>
       </div>
 
@@ -545,23 +826,106 @@ export default function Navbar({ className }: { className?: string }) {
 
           {/* Mobile Account Links */}
           <div className="flex items-center justify-around px-4 py-4 border-t bg-gray-50">
-            <div className="flex flex-col items-center gap-1">
-              <FiUser size={20} />
-              <span className="text-xs">Account</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <FiHeart size={20} />
-              <span className="text-xs">Wishlist</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <div className="relative">
-                <FiShoppingCart size={20} />
-                <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-white">
-                  0
-                </span>
-              </div>
-              <span className="text-xs">Cart</span>
-            </div>
+            {isMounted && user ? (
+              <>
+                <Link
+                  href="/profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex flex-col items-center gap-1"
+                >
+                  <Image
+                    src={user.image || "https://avatar.iran.liara.run/public/1"}
+                    alt={user.name}
+                    width={24}
+                    height={24}
+                    className="rounded-full"
+                  />
+                  <span className="text-xs">Profile</span>
+                </Link>
+                <Link
+                  href="/orders"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex flex-col items-center gap-1"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                    />
+                  </svg>
+                  <span className="text-xs">Orders</span>
+                </Link>
+                <Link
+                  href="/cart"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex flex-col items-center gap-1 relative"
+                >
+                  <FiShoppingCart size={20} />
+                  <span className="text-xs">Cart</span>
+                  {itemCount > 0 && (
+                    <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-white">
+                      {itemCount}
+                    </span>
+                  )}
+                </Link>
+                <button
+                  onClick={() => {
+                    logout();
+                    setMobileMenuOpen(false);
+                    router.push("/");
+                  }}
+                  className="flex flex-col items-center gap-1 text-red-600"
+                >
+                  <FiLogOut size={20} />
+                  <span className="text-xs">Logout</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex flex-col items-center gap-1"
+                >
+                  <FiLogIn size={20} />
+                  <span className="text-xs">Login</span>
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex flex-col items-center gap-1"
+                >
+                  <FiUserPlus size={20} />
+                  <span className="text-xs">Register</span>
+                </Link>
+                <div className="flex flex-col items-center gap-1">
+                  <FiHeart size={20} />
+                  <span className="text-xs">Wishlist</span>
+                </div>
+                <Link
+                  href="/cart"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex flex-col items-center gap-1"
+                >
+                  <div className="relative">
+                    <FiShoppingCart size={20} />
+                    {itemCount > 0 && (
+                      <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-white">
+                        {itemCount}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs">Cart</span>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Contact */}

@@ -2,8 +2,10 @@
 
 import PageBanner from "@/components/PageBanner";
 import { Button } from "@/components/ui/button";
+import { useCart } from "@/context/CartContext";
+import { apiUrl } from "@/lib/api";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaHeart, FaShareAlt } from "react-icons/fa";
 import { FiMinus, FiPlus, FiShoppingCart } from "react-icons/fi";
@@ -36,7 +38,9 @@ type Product = {
 
 const ShopDetailsClient = () => {
   const params = useParams();
+  const router = useRouter();
   const slug = params.slug as string;
+  const { addToCart } = useCart();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,13 +50,13 @@ const ShopDetailsClient = () => {
   const [activeTab, setActiveTab] = useState("description");
   const [rating] = useState(4.5);
   const [reviewCount] = useState(14);
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [showCartSuccess, setShowCartSuccess] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await fetch(
-          `https://zenvira-server.vercel.app/api/medicines/${slug}`,
-        );
+        const res = await fetch(apiUrl(`/api/medicines/${slug}`));
         if (!res.ok) throw new Error("Failed to fetch product");
 
         const json = await res.json();
@@ -119,6 +123,39 @@ const ShopDetailsClient = () => {
   const handleQuantityChange = (value: number) => {
     if (value > 0 && value <= product.stock) {
       setQuantity(value);
+    }
+  };
+
+  const handleAddToCart = () => {
+    if (!product) return;
+
+    setAddingToCart(true);
+    try {
+      addToCart({
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        price: product.price,
+        image: product.images[0] || "/placeholder.png",
+        stock: product.stock,
+        quantity: quantity,
+      });
+
+      // Show success notification
+      setAddingToCart(false);
+      setShowCartSuccess(true);
+
+      // Hide notification after 3 seconds
+      setTimeout(() => {
+        setShowCartSuccess(false);
+      }, 3000);
+
+      // Reset quantity to 1
+      setQuantity(1);
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      setAddingToCart(false);
+      alert("Failed to add item to cart. Please try again.");
     }
   };
 
@@ -258,11 +295,12 @@ const ShopDetailsClient = () => {
               </div>
 
               <Button
-                disabled={product.stock === 0}
+                onClick={handleAddToCart}
+                disabled={product.stock === 0 || addingToCart}
                 className="flex-1 bg-primary hover:bg-primary/90 text-white flex items-center justify-center gap-2"
               >
                 <FiShoppingCart size={20} />
-                Add to Cart
+                {addingToCart ? "Adding..." : "Add to Cart"}
               </Button>
             </div>
 
@@ -339,9 +377,10 @@ const ShopDetailsClient = () => {
                   Product Overview
                 </h3>
                 <p className="text-gray-600 leading-relaxed mb-6">
-                  {product.description} This medication has been carefully formulated
-                  to provide effective relief while maintaining the highest safety standards.
-                  Always consult with your healthcare provider before starting any new medication.
+                  {product.description} This medication has been carefully
+                  formulated to provide effective relief while maintaining the
+                  highest safety standards. Always consult with your healthcare
+                  provider before starting any new medication.
                 </p>
                 <div className="bg-gray-50 p-6 rounded-lg">
                   <h4 className="font-semibold text-gray-900 mb-4">
@@ -358,21 +397,22 @@ const ShopDetailsClient = () => {
                     <li className="flex items-start gap-2">
                       <span className="text-primary mt-1">→</span>
                       <span>
-                        Follow the dosage instructions provided by your doctor or
-                        as indicated on the packaging
+                        Follow the dosage instructions provided by your doctor
+                        or as indicated on the packaging
                       </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-primary mt-1">→</span>
                       <span>
-                        Do not exceed the recommended dose without medical advice
+                        Do not exceed the recommended dose without medical
+                        advice
                       </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-primary mt-1">→</span>
                       <span>
-                        If symptoms persist or worsen, discontinue use and consult
-                        a healthcare professional immediately
+                        If symptoms persist or worsen, discontinue use and
+                        consult a healthcare professional immediately
                       </span>
                     </li>
                   </ul>
@@ -436,6 +476,41 @@ const ShopDetailsClient = () => {
           </div>
         </div>
       </div>
+
+      {/* Success Notification Toast */}
+      {showCartSuccess && (
+        <div className="fixed top-24 right-4 z-50 animate-in slide-in-from-right">
+          <div className="bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3">
+            <div className="shrink-0">
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+            <div>
+              <p className="font-semibold">Added to cart!</p>
+              <p className="text-sm text-green-50">
+                {quantity} x {product.name}
+              </p>
+            </div>
+            <button
+              onClick={() => router.push("/cart")}
+              className="ml-4 bg-white text-green-600 px-4 py-2 rounded font-medium text-sm hover:bg-green-50 transition"
+            >
+              View Cart
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,6 +1,7 @@
 "use client";
 
 import ProductCard, { Product } from "@/components/ProductCard";
+import { apiUrl } from "@/lib/api";
 import { useEffect, useState } from "react";
 import { FaArrowLeftLong, FaArrowRightLong } from "react-icons/fa6";
 import { Button } from "../ui/button";
@@ -75,9 +76,7 @@ const ShopCard = ({
           ...(manufacturer && { manufacturer }),
         });
 
-        const res = await fetch(
-          `https://zenvira-server.vercel.app/api/medicines?${queryParams}`,
-        );
+        const res = await fetch(apiUrl(`/api/medicines?${queryParams}`));
         if (!res.ok) throw new Error("Failed to fetch products");
 
         const json: ApiResponse = await res.json();

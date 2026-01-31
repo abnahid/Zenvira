@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { apiUrl } from "@/lib/api";
 import { useEffect, useState } from "react";
 import { FiFilter, FiGrid, FiList, FiSearch, FiX } from "react-icons/fi";
 import ShopCard from "./ShopCard";
@@ -43,9 +44,7 @@ const ShopClient = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch(
-          "https://zenvira-server.vercel.app/api/categories",
-        );
+        const res = await fetch(apiUrl("/api/categories"));
         if (res.ok) {
           const data = await res.json();
           setCategories(data.success ? data.data : []);
