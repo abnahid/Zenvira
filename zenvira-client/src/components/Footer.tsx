@@ -1,4 +1,6 @@
-import { footerData } from "@/data/footerData"
+import { footerData } from "@/data/footerData";
+import Image from "next/image";
+import { FiMapPin } from "react-icons/fi";
 
 export default function Footer() {
   return (
@@ -15,7 +17,7 @@ export default function Footer() {
 
           <div className="flex gap-3">
             {footerData.socials.map((item, i) => {
-              const Icon = item.icon
+              const Icon = item.icon;
               return (
                 <a
                   key={i}
@@ -24,7 +26,7 @@ export default function Footer() {
                 >
                   <Icon size={14} />
                 </a>
-              )
+              );
             })}
           </div>
         </div>
@@ -69,21 +71,14 @@ export default function Footer() {
 
         {/* Brand + Subscribe */}
         <div>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-9 h-9 bg-emerald-500 rounded-full flex items-center justify-center text-black font-bold">
-              ♥
-            </div>
-            <h3 className="text-white font-semibold">
-              {footerData.brand.name}
-            </h3>
-          </div>
+          {/* Logo */}
+          <Image src="/logo-zenvira.svg" alt="Logo" width={180} height={36} />
 
-          <p className="text-sm mb-4">
-            {footerData.brand.tagline}
-          </p>
+          <p className="text-sm my-4">{footerData.brand.tagline}</p>
 
           <p className="text-sm flex items-center gap-2 mb-6">
-            📍 {footerData.brand.address}
+            <FiMapPin className="w-4 h-4" />
+            {footerData.brand.address}
           </p>
 
           <div className="flex">
@@ -106,15 +101,11 @@ export default function Footer() {
 
           <div className="flex gap-4 text-gray-400">
             {footerData.payments.map((Icon, i) => (
-              <Icon
-                key={i}
-                size={28}
-                className="hover:text-white transition"
-              />
+              <Icon key={i} size={28} className="hover:text-white transition" />
             ))}
           </div>
         </div>
       </div>
     </footer>
-  )
+  );
 }

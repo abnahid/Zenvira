@@ -1,38 +1,38 @@
 import {
-  FaFacebookF,
-  FaTwitter,
-  FaInstagram,
-  FaPinterestP,
-  FaCcVisa,
+  FaCcAmex,
   FaCcMastercard,
   FaCcPaypal,
   FaCcStripe,
-  FaCcAmex,
-} from "react-icons/fa"
+  FaCcVisa,
+  FaFacebookF,
+  FaInstagram,
+  FaPinterestP,
+  FaTwitter,
+} from "react-icons/fa";
 
 export const footerData = {
   brand: {
-    name: "Vicodin",
+    name: "Zenvira",
     tagline:
-      "We are a team of designers and developers creating high quality Magento, Prestashop, and custom web solutions.",
-    address: "254 Lillian Blvd, Holbrook",
+      "We are a dedicated team of pharmaceutical experts and healthcare professionals committed to providing high-quality medicines and health solutions worldwide.",
+    address: "500 Medical Park Drive, sylhet",
   },
 
   about: {
     title: "About Us",
     description:
-      "Corporate clients and leisure travelers have relied on our dependable, safe, and professional services across major cities worldwide for more than a decade.",
+      "Zenvira has been a trusted partner in healthcare for over a decade, delivering reliable, safe, and clinically-proven pharmaceutical products to patients and healthcare providers across major cities worldwide.",
   },
 
   links: {
     title: "Useful Links",
     items: [
-      { label: "About", href: "/about" },
-      { label: "News", href: "/news" },
-      { label: "Partners", href: "/partners" },
-      { label: "Room Details", href: "/rooms" },
-      { label: "Gallery", href: "/gallery" },
-      { label: "Contacts", href: "/contact" },
+      { label: "About Us", href: "/about" },
+      { label: "Shops", href: "/shops" },
+      { label: "Our Doctors", href: "/doctors" },
+      { label: "Prescriptions", href: "/prescriptions" },
+      { label: "Health Resources", href: "/resources" },
+      { label: "Contact Us", href: "/contact" },
     ],
   },
 
@@ -40,11 +40,11 @@ export const footerData = {
     title: "Help?",
     items: [
       { label: "FAQ", href: "/faq" },
-      { label: "Terms & Conditions", href: "/terms" },
-      { label: "Reporting", href: "/report" },
-      { label: "Documentation", href: "/docs" },
-      { label: "Support Policy", href: "/support" },
-      { label: "Privacy", href: "/privacy" },
+      { label: "Dosage Guide", href: "/dosage" },
+      { label: "Side Effects", href: "/side-effects" },
+      { label: "Product Information", href: "/product-info" },
+      { label: "Safety Policy", href: "/safety" },
+      { label: "Privacy Policy", href: "/privacy" },
     ],
   },
 
@@ -57,5 +57,5 @@ export const footerData = {
 
   payments: [FaCcVisa, FaCcMastercard, FaCcPaypal, FaCcStripe, FaCcAmex],
 
-  copyright: "© TunaThemes All rights reserved.",
-}
+  copyright: "© Zenvira Pharmaceuticals. All rights reserved.",
+};
