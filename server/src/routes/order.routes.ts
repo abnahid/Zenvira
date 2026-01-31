@@ -149,7 +149,14 @@ router.get("/:id", requireAuth, async (req: AuthRequest, res) => {
 router.post("/", requireAuth, async (req: AuthRequest, res) => {
   try {
     const userId = req.user?.id;
-    const { address, items } = req.body;
+    const {
+      shippingName,
+      shippingPhone,
+      shippingEmail,
+      address,
+      paymentMethod = "cod",
+      items,
+    } = req.body;
 
     if (!userId) {
       return res
@@ -157,10 +164,26 @@ router.post("/", requireAuth, async (req: AuthRequest, res) => {
         .json({ success: false, message: "Authentication required" });
     }
 
-    if (!address || !items || !Array.isArray(items) || items.length === 0) {
+    if (!shippingName || !shippingPhone || !shippingEmail || !address) {
+      return res.status(400).json({
+        success: false,
+        message: "Shipping name, phone, email, and address are required",
+      });
+    }
+
+    // Validate payment method
+    const validPaymentMethods = ["cod"];
+    if (!validPaymentMethods.includes(paymentMethod)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid payment method. Must be one of: ${validPaymentMethods.join(", ")}`,
+      });
+    }
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
       return res
         .status(400)
-        .json({ success: false, message: "Address and items are required" });
+        .json({ success: false, message: "Order items are required" });
     }
 
     // Validate items and check stock
@@ -209,6 +232,10 @@ router.post("/", requireAuth, async (req: AuthRequest, res) => {
       const newOrder = await tx.order.create({
         data: {
           total,
+          paymentMethod,
+          shippingName,
+          shippingPhone,
+          shippingEmail,
           address,
           customerId: userId,
           items: {
@@ -324,6 +351,59 @@ router.put(
       res
         .status(500)
         .json({ success: false, message: "Failed to update order status" });
+    }
+  },
+);
+
+// Update payment status (admin only)
+router.put(
+  "/:id/payment",
+  requireAuth,
+  requireRole("admin"),
+  async (req: AuthRequest, res) => {
+    try {
+      const id = req.params.id;
+      const { paymentStatus } = req.body;
+
+      const validPaymentStatuses = ["pending", "paid"];
+      if (!paymentStatus || !validPaymentStatuses.includes(paymentStatus)) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid payment status. Must be one of: ${validPaymentStatuses.join(", ")}`,
+        });
+      }
+
+      const order = await prisma.order.findUnique({ where: { id } });
+
+      if (!order) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Order not found" });
+      }
+
+      const updatedOrder = await prisma.order.update({
+        where: { id },
+        data: { paymentStatus },
+        include: {
+          customer: {
+            select: { id: true, name: true, email: true },
+          },
+          items: {
+            include: {
+              medicine: {
+                select: { id: true, name: true, slug: true, images: true },
+              },
+            },
+          },
+        },
+      });
+
+      res.json({ success: true, data: updatedOrder });
+    } catch (error) {
+      console.error("Update payment status error:", error);
+      res
+        .status(500)
+        .json({ success: false, message: "Failed to update payment status" });
     }
   },
 );

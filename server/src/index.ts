@@ -8,6 +8,7 @@ import categoryRoutes from "./routes/category.routes.js";
 import medicineRoutes from "./routes/medicine.routes.js";
 import orderRoutes from "./routes/order.routes.js";
 import reviewRoutes from "./routes/review.routes.js";
+import userRoutes from "./routes/user.routes.js";
 
 // Load environment variables in development
 if (process.env.NODE_ENV !== "production") {
@@ -47,6 +48,7 @@ app.use("/api/medicines", medicineRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/user", userRoutes);
 
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error("Error:", err);

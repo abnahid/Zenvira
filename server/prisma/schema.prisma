@@ -54,15 +54,25 @@ model Medicine {
 }
 
 model Order {
-  id         String      @id @default(uuid())
-  total      Float
-  status     String      @default("placed")
-  address    String
-  createdAt  DateTime    @default(now())
-  customerId String
-  customer   User        @relation(fields: [customerId], references: [id])
-  items      OrderItem[]
+  id              String   @id @default(uuid())
+  total           Float
+  status          String   @default("placed")
+
+  paymentMethod  String   @default("cod")    
+  paymentStatus  String   @default("pending") 
+  shippingName   String
+  shippingPhone String
+  shippingEmail String
+  address        String
+
+  createdAt      DateTime @default(now())
+
+  customerId     String
+  customer       User     @relation(fields: [customerId], references: [id])
+  items          OrderItem[]
 }
+
+
 
 model OrderItem {
   id         String   @id @default(uuid())
