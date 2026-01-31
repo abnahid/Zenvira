@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { apiUrl } from "@/lib/api";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -18,11 +19,14 @@ import {
 } from "react-icons/fi";
 
 const ProfileClient = () => {
-  const { user, logout, isLoading } = useAuth();
+  const { user, logout, isLoading, fetchUser } = useAuth();
   const { wishlist, removeFromWishlist } = useWishlist();
   const [activeTab, setActiveTab] = useState("profile");
   const [isEditing, setIsEditing] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const [editData, setEditData] = useState({
     name: "",
     email: "",
@@ -42,6 +46,43 @@ const ProfileClient = () => {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  const handleSaveProfile = async () => {
+    try {
+      setIsSaving(true);
+      setSaveError(null);
+      setSaveSuccess(false);
+
+      const response = await fetch(apiUrl("/api/user/me"), {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          name: editData.name,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSaveSuccess(true);
+        setIsEditing(false);
+        // Refresh user data from context
+        await fetchUser();
+        // Clear success message after 3 seconds
+        setTimeout(() => setSaveSuccess(false), 3000);
+      } else {
+        setSaveError(data.message || "Failed to save profile");
+      }
+    } catch (error) {
+      console.error("Save profile error:", error);
+      setSaveError("Failed to save profile. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   if (!isMounted || isLoading) {
     return (
@@ -174,7 +215,26 @@ const ProfileClient = () => {
                       <h3 className="text-lg font-semibold text-gray-900 mb-6">
                         Edit Profile Information
                       </h3>
-                      <form className="space-y-4">
+
+                      {saveError && (
+                        <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm">
+                          {saveError}
+                        </div>
+                      )}
+
+                      {saveSuccess && (
+                        <div className="mb-4 p-3 bg-green-50 text-green-600 rounded-lg text-sm">
+                          Profile updated successfully!
+                        </div>
+                      )}
+
+                      <form
+                        className="space-y-4"
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          handleSaveProfile();
+                        }}
+                      >
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
                             Full Name
@@ -186,6 +246,7 @@ const ProfileClient = () => {
                               setEditData({ ...editData, name: e.target.value })
                             }
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                            placeholder="Enter your full name"
                           />
                         </div>
 
@@ -196,23 +257,35 @@ const ProfileClient = () => {
                           <input
                             type="email"
                             value={editData.email}
-                            onChange={(e) =>
-                              setEditData({
-                                ...editData,
-                                email: e.target.value,
-                              })
-                            }
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                            disabled
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed focus:outline-none"
+                            placeholder="Email cannot be changed"
                           />
+                          <p className="text-xs text-gray-500 mt-1">
+                            Email address cannot be changed for security
+                            reasons.
+                          </p>
                         </div>
 
                         <div className="flex gap-3 pt-4">
-                          <Button className="bg-primary hover:bg-primary/90">
-                            Save Changes
+                          <Button
+                            type="submit"
+                            disabled={isSaving}
+                            className="bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isSaving ? "Saving..." : "Save Changes"}
                           </Button>
                           <button
                             type="button"
-                            onClick={() => setIsEditing(false)}
+                            onClick={() => {
+                              setIsEditing(false);
+                              setSaveError(null);
+                              setSaveSuccess(false);
+                              setEditData({
+                                name: user?.name || "",
+                                email: user?.email || "",
+                              });
+                            }}
                             className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm font-medium flex items-center gap-2"
                           >
                             <FiX size={16} />
@@ -261,23 +334,21 @@ const ProfileClient = () => {
 
             {/* Orders Section */}
             {activeTab === "orders" && (
-              <div className="bg-white rounded-lg shadow-sm p-8">
-                <h3 className="text-lg font-semibold text-gray-900 mb-6">
-                  My Orders
+              <div className="text-center py-12">
+                <FiPackage className="mx-auto mb-4 text-gray-400" size={48} />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  View Your Orders
                 </h3>
-                <div className="text-center py-12">
-                  <FiPackage className="mx-auto mb-4 text-gray-400" size={48} />
-                  <p className="text-gray-600">No orders yet</p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Start shopping to view your orders here
-                  </p>
-                  <a
-                    href="/shops"
-                    className="inline-block mt-6 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition text-sm font-medium"
-                  >
-                    Browse Products
-                  </a>
-                </div>
+                <p className="text-gray-600 mb-6">
+                  Click the button below to view your complete order history,
+                  track shipments, and manage your orders.
+                </p>
+                <a
+                  href="/orders"
+                  className="inline-block px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition text-sm font-medium"
+                >
+                  Go to Orders
+                </a>
               </div>
             )}
 
@@ -371,20 +442,21 @@ const ProfileClient = () => {
 
             {/* Addresses Section */}
             {activeTab === "addresses" && (
-              <div className="bg-white rounded-lg shadow-sm p-8">
-                <h3 className="text-lg font-semibold text-gray-900 mb-6">
-                  My Addresses
+              <div className="text-center py-12">
+                <FiMapPin className="mx-auto mb-4 text-gray-400" size={48} />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Manage Your Addresses
                 </h3>
-                <div className="text-center py-12">
-                  <FiMapPin className="mx-auto mb-4 text-gray-400" size={48} />
-                  <p className="text-gray-600">No addresses saved yet</p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Add your addresses for faster checkout
-                  </p>
-                  <button className="inline-block mt-6 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition text-sm font-medium">
-                    Add Address
-                  </button>
-                </div>
+                <p className="text-gray-600 mb-6">
+                  Coming soon! You'll be able to save and manage your delivery
+                  addresses for faster checkout.
+                </p>
+                <button
+                  disabled
+                  className="inline-block px-6 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed text-sm font-medium"
+                >
+                  Add Address (Coming Soon)
+                </button>
               </div>
             )}
           </div>
