@@ -106,7 +106,7 @@ router.put(
   requireRole("admin"),
   async (req: AuthRequest, res) => {
     try {
-      const { id } = req.params;
+      const id = String(req.params.id);
       const { name, slug } = req.body;
 
       const existing = await prisma.category.findUnique({
@@ -134,8 +134,8 @@ router.put(
       }
 
       const data: Record<string, any> = {};
-      if (name !== undefined) data.name = name;
-      if (slug !== undefined) data.slug = slug;
+      if (name !== undefined && typeof name === 'string') data.name = name;
+      if (slug !== undefined && typeof slug === 'string') data.slug = slug;
 
       const category = await prisma.category.update({
         where: { id },
@@ -159,7 +159,7 @@ router.delete(
   requireRole("admin"),
   async (req: AuthRequest, res) => {
     try {
-      const { id } = req.params;
+      const id = String(req.params.id);
 
       const existing = await prisma.category.findUnique({
         where: { id },
@@ -175,7 +175,7 @@ router.delete(
       }
 
       // Don't allow deletion if category has medicines
-      if (existing.medicines.length > 0) {
+      if (existing.medicines && existing.medicines.length > 0) {
         return res.status(400).json({
           success: false,
           message: "Cannot delete category with existing medicines",

@@ -9,21 +9,151 @@ import {
 const router = Router();
 
 router.get("/", async (req, res) => {
-  const meds = await prisma.medicine.findMany({
-    where: { status: "active" },
-    include: {
-      category: true,
-      seller: {
-        select: {
-          id: true,
-          name: true,
-          image: true,
-          email: true,
+  try {
+    // Pagination
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(
+      100,
+      Math.max(1, parseInt(req.query.limit as string) || 12),
+    );
+    const skip = (page - 1) * limit;
+
+    // Sorting
+    const sortBy = (req.query.sortBy as string) || "createdAt";
+    const sortOrder =
+      (req.query.sortOrder as string) === "asc" ? "asc" : "desc";
+    const allowedSortFields = ["name", "price", "createdAt", "stock"];
+    const finalSortBy = allowedSortFields.includes(sortBy)
+      ? sortBy
+      : "createdAt";
+
+    // Search
+    const search = (req.query.search as string) || "";
+
+    // Filters
+    const categoryId = req.query.categoryId as string;
+    const minPrice = parseFloat(req.query.minPrice as string);
+    const maxPrice = parseFloat(req.query.maxPrice as string);
+    const manufacturer = req.query.manufacturer as string;
+
+    // Build where clause
+    const where: any = { status: "active" };
+
+    // Search filter (name, description, manufacturer)
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+        { manufacturer: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    // Category filter
+    if (categoryId) {
+      where.categoryId = categoryId;
+    }
+
+    // Price range filter
+    if (!isNaN(minPrice) || !isNaN(maxPrice)) {
+      where.price = {};
+      if (!isNaN(minPrice)) where.price.gte = minPrice;
+      if (!isNaN(maxPrice)) where.price.lte = maxPrice;
+    }
+
+    // Manufacturer filter
+    if (manufacturer) {
+      where.manufacturer = { contains: manufacturer, mode: "insensitive" };
+    }
+
+    // Get total count for pagination
+    const total = await prisma.medicine.count({ where });
+
+    // Fetch medicines
+    const meds = await prisma.medicine.findMany({
+      where,
+      include: {
+        category: true,
+        seller: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            email: true,
+          },
         },
       },
-    },
-  });
-  res.json({ success: true, data: meds });
+      orderBy: { [finalSortBy]: sortOrder },
+      skip,
+      take: limit,
+    });
+
+    const totalPages = Math.ceil(total / limit);
+
+    res.json({
+      success: true,
+      data: meds,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    });
+  } catch (error) {
+    console.error("Get medicines error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch medicines" });
+  }
+});
+
+// Get single medicine by slug
+router.get("/:slug", async (req, res) => {
+  try {
+    const slug = req.params.slug;
+
+    const medicine = await prisma.medicine.findUnique({
+      where: { slug },
+      include: {
+        category: true,
+        seller: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            email: true,
+          },
+        },
+        reviews: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+        },
+      },
+    });
+
+    if (!medicine) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Medicine not found" });
+    }
+
+    res.json({ success: true, data: medicine });
+  } catch (error) {
+    console.error("Get medicine error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch medicine" });
+  }
 });
 
 router.post(
@@ -100,7 +230,7 @@ router.put(
   requireRole("seller", "admin"),
   async (req: AuthRequest, res) => {
     try {
-      const { id } = req.params;
+      const id = String(req.params.id);
       const {
         name,
         slug,
@@ -165,7 +295,7 @@ router.delete(
   requireRole("seller", "admin"),
   async (req: AuthRequest, res) => {
     try {
-      const { id } = req.params;
+      const id = String(req.params.id);
 
       const existing = await prisma.medicine.findUnique({
         where: { id },
