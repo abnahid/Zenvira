@@ -17,13 +17,19 @@ if (process.env.NODE_ENV !== "production") {
 
 const app = express();
 
-// CORS - fully open for rapid development
+// CORS configuration
 app.use(
   cors({
-    origin: true, // Allow ALL origins
+    origin: true,
     credentials: true,
-    methods: "*", // Allow ALL methods
-    allowedHeaders: "*", // Allow ALL headers
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+      "Origin",
+    ],
   }),
 );
 

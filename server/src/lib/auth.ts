@@ -1,21 +1,35 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import { prisma } from "./prisma.js";
 
-// Initialize Resend with error handling
-let resend: Resend | null = null;
+// Initialize Nodemailer transporter with Google SMTP
+let transporter: nodemailer.Transporter | null = null;
 
-if (process.env.RESEND_API_KEY) {
-  resend = new Resend(process.env.RESEND_API_KEY);
-  console.log("✓ Resend email service initialized");
+if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+  transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS, // Use App Password, not regular password
+    },
+  });
+
+  // Verify connection
+  transporter.verify((error) => {
+    if (error) {
+      console.error("✗ SMTP connection failed:", error.message);
+    } else {
+      console.log("✓ Google SMTP email service initialized");
+    }
+  });
 } else {
   console.warn(
-    "⚠ RESEND_API_KEY not set - email sending will not work. Add it to .env",
+    "⚠ SMTP_USER or SMTP_PASS not set - email sending will not work. Add them to .env",
   );
 }
 
-// Email sending function using Resend
+// Email sending function using Nodemailer
 async function sendEmail({
   to,
   subject,
@@ -25,26 +39,21 @@ async function sendEmail({
   subject: string;
   html: string;
 }) {
-  if (!resend) {
-    console.warn(`Email not sent to ${to}: Resend API key not configured`);
+  if (!transporter) {
+    console.warn(`Email not sent to ${to}: SMTP not configured`);
     return;
   }
 
   try {
-    const result = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
+    const result = await transporter.sendMail({
+      from: process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER,
       to,
       subject,
       html,
     });
 
-    if (result.error) {
-      console.error("Failed to send email:", result.error);
-      return;
-    }
-
-    console.log(`✓ Email sent to ${to}:`, result.data?.id);
-    return result.data;
+    console.log(`✓ Email sent to ${to}:`, result.messageId);
+    return result;
   } catch (error) {
     console.error("Email error:", error);
     // Don't throw, just log - email failures shouldn't break auth
@@ -65,29 +74,261 @@ export const auth = betterAuth({
     minPasswordLength: 8,
     maxPasswordLength: 128,
     // Email verification
+
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }: any, request: any) => {
+      // Extract token from URL - handle different URL formats
+      const urlObj = new URL(url);
+      const token =
+        urlObj.searchParams.get("token") || urlObj.pathname.split("/").pop();
+      const frontendUrl = `${process.env.TRUSTED_ORIGIN || "http://localhost:3000"}/verify-email?token=${token}`;
+
+      console.log("Verification URL from better-auth:", url);
+      console.log("Frontend URL:", frontendUrl);
+
       void sendEmail({
         to: user.email,
         subject: "Verify your email address",
         html: `
-          <h1>Verify Your Email</h1>
-          <p>Click the link below to verify your email address:</p>
-          <a href="${url}">Verify Email</a>
-          <p>If you didn't sign up, you can ignore this email.</p>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Verify Email</title>
+  </head>
+
+  <body style="margin:0; padding:0; background:#f5f7fb; font-family:Arial, sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="center" style="padding:30px;">
+
+          <table width="480" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
+            <tr>
+              <td align="left">
+                <img
+                  src="https://i.ibb.co.com/39ySSmQd/logo-zenvin.png"
+                  alt="Zenvira"
+                  width="140"
+                  style="display:block;"
+                />
+              </td>
+
+              <td align="right">
+                  <img
+                    src="https://img.icons8.com/?size=100&id=uLWV5A9vXIPu&format=png&color=000000"
+                    alt="Facebook"
+                    width="24"
+                    style="margin-left:8px; display:inline-block;"
+                  />
+                  <img
+                    src="https://img.icons8.com/?size=100&id=13930&format=png&color=000000"
+                    alt="LinkedIn"
+                    width="24"
+                    style="margin-left:8px; display:inline-block;"
+                  />
+              </td>
+            </tr>
+          </table>
+
+          <table width="480" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:8px; padding:24px;">
+
+            <tr>
+              <td style="font-size:20px; font-weight:600; padding-bottom:16px;">
+                Verify Your Email
+              </td>
+            </tr>
+
+            <tr>
+              <td style="font-size:14px; color:#333; line-height:1.6;">
+                Hi There,<br><br>
+                Welcome to Zenvira! Please verify your email address to complete your registration
+                and start exploring our products.
+              </td>
+            </tr>
+
+            <tr>
+              <td align="center" style="padding:24px 0;">
+                <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
+                  <tr>
+                    <td align="center" bgcolor="#4f46e5" style="border-radius:6px;">
+                      <a
+                        href="${frontendUrl}"
+                        target="_blank"
+                        style="display:inline-block; padding:14px 28px; font-size:14px; font-weight:600; color:#ffffff; text-decoration:none; border-radius:6px;"
+                      >
+                        Verify Email
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="font-size:13px; color:#555;">
+                This link will expire in 24 hours for security reasons.<br>
+                If you didn't create an account, you can safely ignore this email.
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding-top:24px; font-size:13px; color:#777;">
+                Thanks,<br>
+                Zenvira Team
+              </td>
+            </tr>
+
+          </table>
+
+          <div style="max-width:480px; margin-top:16px; font-size:12px; color:#888; text-align:left; line-height:1.6;">
+            Want to know more? Contact us at
+            <a href="mailto:info@abnahid.com" style="color:#4f46e5; text-decoration:none;">
+              info@abnahid.com
+            </a><br>
+
+            If you no longer wish to receive emails from Zenvira, you can
+            <a href="{{UNSUBSCRIBE_LINK}}" style="color:#4f46e5; text-decoration:none;">
+              unsubscribe
+            </a>.<br><br>
+
+            500 Medical Park Drive, Sylhet<br>
+            © 2025 Zenvira
+          </div>
+
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
         `,
       });
     },
     // Password reset
     sendResetPassword: async ({ user, url }: any, request: any) => {
+      // Extract token from URL - handle different URL formats
+      const urlObj = new URL(url);
+      const token =
+        urlObj.searchParams.get("token") || urlObj.pathname.split("/").pop();
+      const frontendUrl = `${process.env.TRUSTED_ORIGIN || "http://localhost:3000"}/reset-password?token=${token}`;
+
+      console.log("Reset password URL from better-auth:", url);
+      console.log("Frontend URL:", frontendUrl);
+
       void sendEmail({
         to: user.email,
         subject: "Reset your password",
         html: `
-          <h1>Reset Your Password</h1>
-          <p>Click the link below to reset your password:</p>
-          <a href="${url}">Reset Password</a>
-          <p>This link will expire in 1 hour.</p>
-          <p>If you didn't request a password reset, you can ignore this email.</p>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Reset Password</title>
+  </head>
+
+  <body style="margin:0; padding:0; background:#f5f7fb; font-family:Arial, sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="center" style="padding:30px;">
+
+          <table width="480" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
+            <tr>
+              <td align="left">
+                <img
+                  src="https://i.ibb.co.com/39ySSmQd/logo-zenvin.png"
+                  alt="Zenvira"
+                  width="140"
+                  style="display:block;"
+                />
+              </td>
+
+              <td align="right">
+                  <img
+                    src="https://img.icons8.com/?size=100&id=uLWV5A9vXIPu&format=png&color=000000"
+                    alt="Facebook"
+                    width="24"
+                    style="margin-left:8px; display:inline-block;"
+                  />
+                  <img
+                    src="https://img.icons8.com/?size=100&id=13930&format=png&color=000000"
+                    alt="LinkedIn"
+                    width="24"
+                    style="margin-left:8px; display:inline-block;"
+                  />
+              </td>
+            </tr>
+          </table>
+
+          <table width="480" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:8px; padding:24px;">
+
+            <tr>
+              <td style="font-size:20px; font-weight:600; padding-bottom:16px;">
+                Reset Your Password
+              </td>
+            </tr>
+
+            <tr>
+              <td style="font-size:14px; color:#333; line-height:1.6;">
+                Hi There,<br><br>
+                We received a request to reset your password for your Zenvira account.
+                Click the button below to create a new one.
+              </td>
+            </tr>
+
+            <tr>
+              <td align="center" style="padding:24px 0;">
+                <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
+                  <tr>
+                    <td align="center" bgcolor="#4f46e5" style="border-radius:6px;">
+                      <a
+                        href="${frontendUrl}"
+                        target="_blank"
+                        style="display:inline-block; padding:14px 28px; font-size:14px; font-weight:600; color:#ffffff; text-decoration:none; border-radius:6px;"
+                      >
+                        Reset Password
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="font-size:13px; color:#555;">
+                This link will expire in 1 hour for security reasons.<br>
+                If you didn't request this, you can safely ignore this email.
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding-top:24px; font-size:13px; color:#777;">
+                Thanks,<br>
+                Zenvira Team
+              </td>
+            </tr>
+
+          </table>
+
+          <div style="max-width:480px; margin-top:16px; font-size:12px; color:#888; text-align:left; line-height:1.6;">
+            Want to know more? Contact us at
+            <a href="mailto:info@abnahid.com" style="color:#4f46e5; text-decoration:none;">
+              info@abnahid.com
+            </a><br>
+
+            If you no longer wish to receive emails from Zenvira, you can
+            <a href="{{UNSUBSCRIBE_LINK}}" style="color:#4f46e5; text-decoration:none;">
+              unsubscribe
+            </a>.<br><br>
+
+            500 Medical Park Drive, Sylhet<br>
+            © 2025 Zenvira
+          </div>
+
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
         `,
       });
     },
@@ -98,14 +339,126 @@ export const auth = betterAuth({
   // Email verification settings
   emailVerification: {
     sendVerificationEmail: async ({ user, url }: any, request: any) => {
+      // Extract token from URL - handle different URL formats
+      const urlObj = new URL(url);
+      const token =
+        urlObj.searchParams.get("token") || urlObj.pathname.split("/").pop();
+      const frontendUrl = `${process.env.TRUSTED_ORIGIN || "http://localhost:3000"}/verify-email?token=${token}`;
+
       void sendEmail({
         to: user.email,
         subject: "Verify your email address",
         html: `
-          <h1>Verify Your Email</h1>
-          <p>Click the link below to verify your email address:</p>
-          <a href="${url}">Verify Email</a>
-          <p>If you didn't sign up, you can ignore this email.</p>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Verify Email</title>
+  </head>
+
+  <body style="margin:0; padding:0; background:#f5f7fb; font-family:Arial, sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="center" style="padding:30px;">
+
+          <table width="480" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
+            <tr>
+              <td align="left">
+                <img
+                  src="https://i.ibb.co.com/39ySSmQd/logo-zenvin.png"
+                  alt="Zenvira"
+                  width="140"
+                  style="display:block;"
+                />
+              </td>
+
+              <td align="right">
+                  <img
+                    src="https://img.icons8.com/?size=100&id=uLWV5A9vXIPu&format=png&color=000000"
+                    alt="Facebook"
+                    width="24"
+                    style="margin-left:8px; display:inline-block;"
+                  />
+                  <img
+                    src="https://img.icons8.com/?size=100&id=13930&format=png&color=000000"
+                    alt="LinkedIn"
+                    width="24"
+                    style="margin-left:8px; display:inline-block;"
+                  />
+              </td>
+            </tr>
+          </table>
+
+          <table width="480" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:8px; padding:24px;">
+
+            <tr>
+              <td style="font-size:20px; font-weight:600; padding-bottom:16px;">
+                Verify Your Email
+              </td>
+            </tr>
+
+            <tr>
+              <td style="font-size:14px; color:#333; line-height:1.6;">
+                Hi There,<br><br>
+                Welcome to Zenvira! Please verify your email address to complete your registration
+                and start exploring our products.
+              </td>
+            </tr>
+
+            <tr>
+              <td align="center" style="padding:24px 0;">
+                <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
+                  <tr>
+                    <td align="center" bgcolor="#4f46e5" style="border-radius:6px;">
+                      <a
+                        href="${frontendUrl}"
+                        target="_blank"
+                        style="display:inline-block; padding:14px 28px; font-size:14px; font-weight:600; color:#ffffff; text-decoration:none; border-radius:6px;"
+                      >
+                        Verify Email
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="font-size:13px; color:#555;">
+                This link will expire in 24 hours for security reasons.<br>
+                If you didn't create an account, you can safely ignore this email.
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding-top:24px; font-size:13px; color:#777;">
+                Thanks,<br>
+                Zenvira Team
+              </td>
+            </tr>
+
+          </table>
+
+          <div style="max-width:480px; margin-top:16px; font-size:12px; color:#888; text-align:left; line-height:1.6;">
+            Want to know more? Contact us at
+            <a href="mailto:info@abnahid.com" style="color:#4f46e5; text-decoration:none;">
+              info@abnahid.com
+            </a><br>
+
+            If you no longer wish to receive emails from Zenvira, you can
+            <a href="{{UNSUBSCRIBE_LINK}}" style="color:#4f46e5; text-decoration:none;">
+              unsubscribe
+            </a>.<br><br>
+
+            500 Medical Park Drive, Sylhet<br>
+            © 2025 Zenvira
+          </div>
+
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
         `,
       });
     },
