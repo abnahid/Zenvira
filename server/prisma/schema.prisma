@@ -9,20 +9,21 @@ datasource db {
 }
 
 model User {
-  id            String     @id @default(uuid())
-  name          String
-  email         String     @unique
-  role          Role       @default(customer)
-  image         String     @default("")
-  status        String     @default("active")
-  createdAt     DateTime   @default(now())
-  medicines     Medicine[]
-  orders        Order[]
-  reviews       Review[]
-  emailVerified Boolean    @default(false)
-  updatedAt     DateTime   @updatedAt
-  sessions      Session[]
-  accounts      Account[]
+  id                String              @id @default(uuid())
+  name              String
+  email             String              @unique
+  role              Role                @default(customer)
+  image             String              @default("")
+  status            String              @default("active")
+  createdAt         DateTime            @default(now())
+  medicines         Medicine[]
+  orders            Order[]
+  reviews           Review[]
+  emailVerified     Boolean             @default(false)
+  updatedAt         DateTime            @updatedAt
+  sessions          Session[]
+  accounts          Account[]
+  sellerApplication SellerApplication?
 
   @@map("user")
 }
@@ -147,4 +148,18 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+
+model SellerApplication {
+  id        String   @id @default(uuid())
+  userId   String   @unique
+  storeName String
+  phone     String
+  address   String
+  note      String?
+  status    String   @default("pending") // pending | approved | rejected
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
 }

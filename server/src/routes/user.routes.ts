@@ -8,6 +8,226 @@ import {
 
 const router = Router();
 
+// ============ SELLER APPLICATION ROUTES ============
+
+// Submit seller application (customer only)
+router.post(
+  "/seller/apply",
+  requireAuth,
+  async (req: AuthRequest, res) => {
+    try {
+      const userId = req.user!.id;
+      const { storeName, phone, address, note } = req.body;
+
+      // Check if user is already a seller
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (user?.role === "seller") {
+        return res.status(400).json({
+          success: false,
+          message: "You are already a seller",
+        });
+      }
+
+      // Check for existing application
+      const existing = await prisma.sellerApplication.findUnique({
+        where: { userId },
+      });
+
+      if (existing) {
+        return res.status(400).json({
+          success: false,
+          message:
+            existing.status === "pending"
+              ? "You already have a pending application"
+              : "You have already submitted an application",
+        });
+      }
+
+      if (!storeName || !phone || !address) {
+        return res.status(400).json({
+          success: false,
+          message: "Store name, phone, and address are required",
+        });
+      }
+
+      const app = await prisma.sellerApplication.create({
+        data: {
+          userId,
+          storeName,
+          phone,
+          address,
+          note: note || null,
+        },
+      });
+
+      res.json({
+        success: true,
+        message: "Application submitted for review",
+        data: app,
+      });
+    } catch (error) {
+      console.error("Submit seller application error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to submit application",
+      });
+    }
+  }
+);
+
+// Get current user's seller application status
+router.get(
+  "/seller/application",
+  requireAuth,
+  async (req: AuthRequest, res) => {
+    try {
+      const userId = req.user!.id;
+
+      const application = await prisma.sellerApplication.findUnique({
+        where: { userId },
+      });
+
+      res.json({
+        success: true,
+        data: application,
+      });
+    } catch (error) {
+      console.error("Get seller application error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch application",
+      });
+    }
+  }
+);
+
+// Get all seller applications (admin only)
+router.get(
+  "/seller-applications",
+  requireAuth,
+  requireRole("admin"),
+  async (req: AuthRequest, res) => {
+    try {
+      const page = Math.max(1, parseInt(req.query.page as string) || 1);
+      const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 10));
+      const skip = (page - 1) * limit;
+      const status = req.query.status as string;
+
+      const where: any = {};
+      if (status && ["pending", "approved", "rejected"].includes(status)) {
+        where.status = status;
+      }
+
+      const total = await prisma.sellerApplication.count({ where });
+
+      const applications = await prisma.sellerApplication.findMany({
+        where,
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+              role: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      });
+
+      const totalPages = Math.ceil(total / limit);
+
+      res.json({
+        success: true,
+        data: applications,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1,
+        },
+      });
+    } catch (error) {
+      console.error("Get seller applications error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch applications",
+      });
+    }
+  }
+);
+
+// Update seller application status (admin only - approve/reject)
+router.put(
+  "/seller-applications/:id",
+  requireAuth,
+  requireRole("admin"),
+  async (req: AuthRequest, res) => {
+    try {
+      const id = req.params.id;
+      const { status } = req.body;
+
+      if (!status || !["approved", "rejected"].includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: "Status must be 'approved' or 'rejected'",
+        });
+      }
+
+      const application = await prisma.sellerApplication.findUnique({
+        where: { id },
+      });
+
+      if (!application) {
+        return res.status(404).json({
+          success: false,
+          message: "Application not found",
+        });
+      }
+
+      if (application.status !== "pending") {
+        return res.status(400).json({
+          success: false,
+          message: "This application has already been processed",
+        });
+      }
+
+      // Update application status
+      const updatedApp = await prisma.sellerApplication.update({
+        where: { id },
+        data: { status },
+      });
+
+      // If approved, update user role to seller
+      if (status === "approved") {
+        await prisma.user.update({
+          where: { id: application.userId },
+          data: { role: "seller" },
+        });
+      }
+
+      res.json({
+        success: true,
+        message: `Application ${status}`,
+        data: updatedApp,
+      });
+    } catch (error) {
+      console.error("Update seller application error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to update application",
+      });
+    }
+  }
+);
+
+// ============ USER MANAGEMENT ROUTES ============
+
 // Get all users (admin only)
 router.get(
   "/",
