@@ -1,14 +1,89 @@
 "use client";
 
+import StatCard from "@/components/dashboard/StatCard";
+import { apiUrl } from "@/lib/api";
 import Link from "next/link";
-import {
-  FiBox,
-  FiDollarSign,
-  FiShoppingCart,
-  FiTrendingUp,
-} from "react-icons/fi";
+import { useEffect, useState } from "react";
+import { FiBox, FiDollarSign, FiShoppingCart, FiStar } from "react-icons/fi";
+
+interface Stats {
+  totalProducts: number;
+  totalOrders: number;
+  totalSales: number;
+  averageReview: number;
+  totalReviews: number;
+}
+
+interface OrderItem {
+  id: string;
+  quantity: number;
+  price: number;
+  medicine: {
+    id: string;
+    name: string;
+  };
+}
+
+interface Order {
+  id: string;
+  status: string;
+  sellerTotal: number;
+  createdAt: string;
+  customer: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  items: OrderItem[];
+}
 
 export default function SellerDashboard() {
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [recentOrders, setRecentOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        // Fetch stats and recent orders in parallel
+        const [statsRes, ordersRes] = await Promise.all([
+          fetch(apiUrl("/api/stats/seller"), { credentials: "include" }),
+          fetch(apiUrl("/api/orders/seller?limit=5"), {
+            credentials: "include",
+          }),
+        ]);
+
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          if (statsData.success) {
+            setStats(statsData.data);
+          }
+        }
+
+        if (ordersRes.ok) {
+          const ordersData = await ordersRes.json();
+          if (ordersData.success) {
+            setRecentOrders(ordersData.data || []);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* Stats Cards */}
@@ -16,30 +91,38 @@ export default function SellerDashboard() {
         <StatCard
           icon={<FiBox className="text-green-600" size={24} />}
           label="My Products"
-          value="42"
-          trend="5 active"
+          value={stats?.totalProducts?.toString() || "0"}
+          trend="Total medicines"
           bgColor="bg-green-50"
+          barColor="bg-green-200"
+          trendColor="text-green-600"
         />
         <StatCard
           icon={<FiShoppingCart className="text-blue-600" size={24} />}
           label="Total Orders"
-          value="320"
-          trend="12 pending"
+          value={stats?.totalOrders?.toString() || "0"}
+          trend="Orders received"
           bgColor="bg-blue-50"
+          barColor="bg-blue-200"
+          trendColor="text-blue-600"
         />
         <StatCard
           icon={<FiDollarSign className="text-orange-600" size={24} />}
           label="Total Sales"
-          value="$12,450"
-          trend="+22%"
+          value={`$${stats?.totalSales?.toLocaleString() || "0"}`}
+          trend="Revenue earned"
           bgColor="bg-orange-50"
+          barColor="bg-orange-200"
+          trendColor="text-orange-600"
         />
         <StatCard
-          icon={<FiTrendingUp className="text-purple-600" size={24} />}
+          icon={<FiStar className="text-purple-600" size={24} />}
           label="Avg Rating"
-          value="4.8⭐"
-          trend="145 reviews"
+          value={stats?.averageReview ? `${stats.averageReview}/5` : "N/A"}
+          trend={`${stats?.totalReviews || 0} reviews`}
           bgColor="bg-purple-50"
+          barColor="bg-purple-200"
+          trendColor="text-purple-600"
         />
       </div>
 
@@ -49,47 +132,45 @@ export default function SellerDashboard() {
           Recent Orders
         </h2>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="border-b border-gray-200">
-              <tr>
-                <th className="text-left py-3 px-4 font-medium text-gray-600">
-                  Order ID
-                </th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600">
-                  Customer
-                </th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600">
-                  Amount
-                </th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600">
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <TableRow
-                id="#OD-001"
-                customer="Pharmacy A"
-                amount="$520"
-                status="delivered"
-              />
-              <TableRow
-                id="#OD-002"
-                customer="Clinic B"
-                amount="$380"
-                status="shipped"
-              />
-              <TableRow
-                id="#OD-003"
-                customer="Hospital C"
-                amount="$650"
-                status="confirmed"
-              />
-            </tbody>
-          </table>
+          {recentOrders.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">
+              No orders yet. Orders will appear here when customers purchase
+              your products.
+            </p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="border-b border-gray-200">
+                <tr>
+                  <th className="text-left py-3 px-4 font-medium text-gray-600">
+                    Order ID
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-600">
+                    Customer
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-600">
+                    Amount
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-600">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentOrders.map((order) => (
+                  <TableRow
+                    key={order.id}
+                    id={`#${order.id.substring(0, 8)}`}
+                    customer={order.customer.name}
+                    amount={`$${order.sellerTotal.toFixed(2)}`}
+                    status={order.status}
+                  />
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
         <Link
-          href="/dashboard/my-orders"
+          href="/dashboard/orders"
           className="inline-block mt-4 text-primary hover:underline font-medium text-sm"
         >
           View All Orders →
@@ -104,7 +185,7 @@ export default function SellerDashboard() {
           </h3>
           <div className="space-y-3">
             <Link
-              href="/dashboard/my-products"
+              href="/dashboard/create-product"
               className="block px-4 py-3 border border-primary/30 rounded-lg text-primary hover:bg-primary/10 transition font-medium text-sm"
             >
               Add New Product
@@ -115,52 +196,42 @@ export default function SellerDashboard() {
             >
               Manage Inventory
             </Link>
+            <Link
+              href="/dashboard/seller-profile"
+              className="block px-4 py-3 border border-primary/30 rounded-lg text-primary hover:bg-primary/10 transition font-medium text-sm"
+            >
+              Edit Profile
+            </Link>
           </div>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            Performance
+            Performance Summary
           </h3>
           <div className="space-y-4">
-            <ProgressBar label="Fulfillment Rate" value={92} color="green" />
-            <ProgressBar label="On-time Delivery" value={88} color="blue" />
-            <ProgressBar
-              label="Customer Satisfaction"
-              value={95}
-              color="orange"
-            />
+            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <span className="text-sm text-gray-600">Products Listed</span>
+              <span className="font-semibold text-gray-900">
+                {stats?.totalProducts || 0}
+              </span>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <span className="text-sm text-gray-600">Orders Completed</span>
+              <span className="font-semibold text-gray-900">
+                {stats?.totalOrders || 0}
+              </span>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <span className="text-sm text-gray-600">Customer Reviews</span>
+              <span className="font-semibold text-gray-900">
+                {stats?.totalReviews || 0}
+              </span>
+            </div>
           </div>
         </div>
       </div>
     </>
-  );
-}
-
-function StatCard({
-  icon,
-  label,
-  value,
-  trend,
-  bgColor,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  trend: string;
-  bgColor: string;
-}) {
-  return (
-    <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100 hover:shadow-md transition">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-gray-600 text-sm font-medium mb-1">{label}</p>
-          <p className="text-3xl font-bold text-gray-900">{value}</p>
-          <p className="text-primary text-xs font-medium mt-2">{trend}</p>
-        </div>
-        <div className={`p-3 rounded-lg ${bgColor}`}>{icon}</div>
-      </div>
-    </div>
   );
 }
 
@@ -175,10 +246,12 @@ function TableRow({
   amount: string;
   status: string;
 }) {
-  const statusColors = {
+  const statusColors: Record<string, string> = {
+    placed: "bg-gray-100 text-gray-800",
     confirmed: "bg-blue-100 text-blue-800",
     shipped: "bg-purple-100 text-purple-800",
     delivered: "bg-green-100 text-green-800",
+    cancelled: "bg-red-100 text-red-800",
   };
 
   return (
@@ -189,44 +262,12 @@ function TableRow({
       <td className="py-3 px-4">
         <span
           className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${
-            statusColors[status as keyof typeof statusColors]
+            statusColors[status] || "bg-gray-100 text-gray-800"
           }`}
         >
           {status}
         </span>
       </td>
     </tr>
-  );
-}
-
-function ProgressBar({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value: number;
-  color: string;
-}) {
-  const colorMap = {
-    green: "bg-green-500",
-    blue: "bg-blue-500",
-    orange: "bg-orange-500",
-    purple: "bg-purple-500",
-  };
-
-  return (
-    <div>
-      <div className="flex justify-between mb-1">
-        <span className="text-sm font-medium text-gray-700">{label}</span>
-        <span className="text-sm font-medium text-gray-700">{value}%</span>
-      </div>
-      <div className="w-full bg-gray-200 rounded-full h-2">
-        <div
-          className={`h-2 rounded-full ${colorMap[color as keyof typeof colorMap]}`}
-          style={{ width: `${value}%` }}
-        />
-      </div>
-    </div>
   );
 }

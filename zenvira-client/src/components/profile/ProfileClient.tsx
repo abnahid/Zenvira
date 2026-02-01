@@ -30,7 +30,9 @@ const ProfileClient = () => {
   const [editData, setEditData] = useState({
     name: "",
     email: "",
+    image: "",
   });
+  const [imagePreview, setImagePreview] = useState<string>("");
 
   // Initialize edit data when user loads
   useEffect(() => {
@@ -38,7 +40,9 @@ const ProfileClient = () => {
       setEditData({
         name: user.name || "",
         email: user.email || "",
+        image: user.image || "",
       });
+      setImagePreview(user.image || "");
     }
   }, [user]);
 
@@ -61,6 +65,7 @@ const ProfileClient = () => {
         credentials: "include",
         body: JSON.stringify({
           name: editData.name,
+          image: editData.image,
         }),
       });
 
@@ -252,6 +257,55 @@ const ProfileClient = () => {
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Profile Photo URL
+                          </label>
+                          <div className="space-y-3">
+                            <input
+                              type="url"
+                              value={editData.image}
+                              onChange={(e) => {
+                                setEditData({
+                                  ...editData,
+                                  image: e.target.value,
+                                });
+                                setImagePreview(e.target.value);
+                              }}
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                              placeholder="Enter photo URL (e.g., https://example.com/photo.jpg)"
+                            />
+                            {imagePreview && (
+                              <div className="flex items-start gap-4">
+                                <div>
+                                  <p className="text-xs text-gray-500 mb-2">
+                                    Preview:
+                                  </p>
+                                  <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-100 border border-gray-300">
+                                    <Image
+                                      src={imagePreview}
+                                      alt="Preview"
+                                      width={96}
+                                      height={96}
+                                      className="w-full h-full object-cover"
+                                      onError={() => {
+                                        console.error("Image failed to load");
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-xs text-gray-600 mt-6">
+                                    Make sure the URL is valid and accessible.
+                                    The image will be displayed on your profile
+                                    and product listings.
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
                             Email Address
                           </label>
                           <input
@@ -284,7 +338,9 @@ const ProfileClient = () => {
                               setEditData({
                                 name: user?.name || "",
                                 email: user?.email || "",
+                                image: user?.image || "",
                               });
+                              setImagePreview(user?.image || "");
                             }}
                             className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm font-medium flex items-center gap-2"
                           >

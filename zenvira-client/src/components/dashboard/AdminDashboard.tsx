@@ -1,5 +1,6 @@
 "use client";
 
+import StatCard from "@/components/dashboard/StatCard";
 import Link from "next/link";
 import { FiBox, FiDollarSign, FiShoppingCart, FiUsers } from "react-icons/fi";
 
@@ -111,33 +112,6 @@ export default function AdminDashboard() {
         </div>
       </div>
     </>
-  );
-}
-
-function StatCard({
-  icon,
-  label,
-  value,
-  trend,
-  bgColor,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  trend: string;
-  bgColor: string;
-}) {
-  return (
-    <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100 hover:shadow-md transition">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-gray-600 text-sm font-medium mb-1">{label}</p>
-          <p className="text-3xl font-bold text-gray-900">{value}</p>
-          <p className="text-green-600 text-xs font-medium mt-2">{trend}</p>
-        </div>
-        <div className={`p-3 rounded-lg ${bgColor}`}>{icon}</div>
-      </div>
-    </div>
   );
 }
 
