@@ -1,7 +1,27 @@
 {
   "name": "zenvira-client",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "Zenvira - Modern Pharmaceutical E-Commerce Platform (Frontend)",
   "private": true,
+  "author": {
+    "name": "Abdul Jabbar Al Nahid",
+    "email": "contact@abnahid.com",
+    "url": "https://abnahid.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abnahid/Zenvira.git",
+    "directory": "zenvira-client"
+  },
+  "license": "MIT",
+  "keywords": [
+    "nextjs",
+    "react",
+    "ecommerce",
+    "pharmaceutical",
+    "tailwindcss",
+    "typescript"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",

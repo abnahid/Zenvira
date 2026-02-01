@@ -1,7 +1,7 @@
 {
-  "name": "server",
+  "name": "zenvira-server",
   "version": "1.0.0",
-  "description": "MediStore API Server",
+  "description": "Zenvira - Modern Pharmaceutical E-Commerce Platform (Backend API)",
   "main": "dist/index.js",
   "type": "module",
   "engines": {
@@ -17,9 +17,25 @@
     "db:push": "prisma db push",
     "db:studio": "prisma studio"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "express",
+    "prisma",
+    "postgresql",
+    "ecommerce",
+    "api",
+    "typescript"
+  ],
+  "author": {
+    "name": "Abdul Jabbar Al Nahid",
+    "email": "contact@abnahid.com",
+    "url": "https://abnahid.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abnahid/Zenvira.git",
+    "directory": "server"
+  },
+  "license": "MIT",
   "dependencies": {
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",

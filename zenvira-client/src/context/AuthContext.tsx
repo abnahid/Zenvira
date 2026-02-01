@@ -9,6 +9,7 @@ export type User = {
   email: string;
   emailVerified: boolean;
   image?: string;
+  role?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -37,7 +38,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const { data: session } = await authClient.getSession();
 
         if (session?.user) {
-          setUser(session.user as User);
+          setUser({
+            ...session.user,
+            createdAt: session.user.createdAt.toString(),
+            updatedAt: session.user.updatedAt.toString(),
+          } as User);
         }
       } catch (error) {
         console.error("Failed to load auth data:", error);
@@ -55,7 +60,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { data: session } = await authClient.getSession();
 
       if (session?.user) {
-        setUser(session.user as User);
+        setUser({
+          ...session.user,
+          createdAt: session.user.createdAt.toString(),
+          updatedAt: session.user.updatedAt.toString(),
+        } as User);
       }
     } catch (error) {
       console.error("Failed to fetch user:", error);

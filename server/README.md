@@ -1,213 +1,218 @@
-# MediStore API Server
+# Zenvira Server
 
-Express + Prisma + PostgreSQL API for MediStore application.
+The backend API for Zenvira - a pharmaceutical e-commerce platform built with Express.js, Prisma, and PostgreSQL.
+
+## Tech Stack
+
+- **Express.js** 5.2.1 - Web framework
+- **Prisma** 7.3.0 - ORM
+- **PostgreSQL** 15+ - Database
+- **TypeScript** 5.x - Type safety
+- **Better Auth** - Authentication
+- **Nodemailer** - Email services
+- **bcrypt** - Password hashing
 
 ## Features
 
-- 🔐 Authentication with Better Auth
-- 💊 Medicine management
-- 📦 Categories
-- ⭐ Reviews
-- 🛒 Orders (schema ready)
-- 👥 User management
+- RESTful API architecture
+- Role-based access control (Customer, Seller, Admin)
+- Email verification & password reset
+- Product management with stock control
+- Order processing with transactions
+- Review and rating system
+- Seller application workflow
+- Platform analytics
 
-## Local Development
+## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+
-- PostgreSQL database
-- npm or yarn
+- Node.js >= 20.0.0
+- PostgreSQL >= 15
+- npm or yarn or pnpm
 
-### Setup
-
-1. Install dependencies:
+### Installation
 
 ```bash
+# Install dependencies
 npm install
-```
 
-2. Copy `.env.example` to `.env` and fill in your environment variables:
-
-```bash
+# Create environment file
 cp .env.example .env
 ```
 
-3. Run Prisma migrations:
+### Environment Variables
 
-```bash
-npx prisma migrate dev
+```env
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/zenvira?schema=public"
+
+# Authentication
+BETTER_AUTH_SECRET="your-secret-key-min-32-characters"
+BETTER_AUTH_URL="http://localhost:5000"
+
+# CORS
+TRUSTED_ORIGIN="http://localhost:3000"
+
+# Email (Gmail SMTP)
+SMTP_USER="your-email@gmail.com"
+SMTP_PASS="your-app-password"
+SMTP_FROM_EMAIL="noreply@zenvira.com"
 ```
 
-4. (Optional) Seed the database:
+### Database Setup
 
 ```bash
-npx prisma db seed
+# Run migrations
+npm run db:migrate
+
+# (Optional) Open Prisma Studio
+npm run db:studio
 ```
 
-5. Start development server:
+### Development
 
 ```bash
 npm run dev
 ```
 
-Server will run at `http://localhost:5000`
+Server runs at [http://localhost:5000](http://localhost:5000)
 
-## Deployment to Vercel
-
-### Prerequisites
-
-- Vercel account
-- PostgreSQL database (e.g., Neon, Supabase, Railway)
-
-### Steps
-
-1. Install Vercel CLI:
+### Production Build
 
 ```bash
-npm install -g vercel
+npm run build
+npm start
 ```
 
-2. Login to Vercel:
+## API Endpoints
 
-```bash
-vercel login
+### Authentication
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/sign-up/email` | Register |
+| POST | `/api/auth/sign-in/email` | Login |
+| POST | `/api/auth/sign-out` | Logout |
+| GET | `/api/auth/session` | Get session |
+
+### Medicines
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/medicines` | List medicines |
+| GET | `/api/medicines/:slug` | Get medicine |
+| POST | `/api/medicines` | Create (seller/admin) |
+| PUT | `/api/medicines/:id` | Update |
+| DELETE | `/api/medicines/:id` | Delete |
+
+### Orders
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/orders` | List orders |
+| POST | `/api/orders` | Create order |
+| PUT | `/api/orders/:id/status` | Update status |
+| DELETE | `/api/orders/:id` | Cancel order |
+
+### Users
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/user` | List users (admin) |
+| GET | `/api/user/me` | Get profile |
+| PUT | `/api/user/me` | Update profile |
+| POST | `/api/user/seller/apply` | Apply as seller |
+
+### Categories
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/categories` | List categories |
+| POST | `/api/categories` | Create (admin) |
+| PUT | `/api/categories/:id` | Update (admin) |
+| DELETE | `/api/categories/:id` | Delete (admin) |
+
+### Reviews
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/reviews/medicine/:id` | Get reviews |
+| POST | `/api/reviews` | Create review |
+| PUT | `/api/reviews/:id` | Update review |
+| DELETE | `/api/reviews/:id` | Delete review |
+
+### Stats
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/stats/seller` | Seller stats |
+| GET | `/api/stats/admin` | Admin stats |
+
+## Project Structure
+
+```
+src/
+├── index.ts              # Express app entry
+├── lib/
+│   ├── auth.ts          # Better Auth config
+│   └── prisma.ts        # Prisma client
+├── middleware/
+│   └── auth.middleware.ts # Auth middleware
+└── routes/
+    ├── medicine.routes.ts
+    ├── user.routes.ts
+    ├── order.routes.ts
+    ├── category.routes.ts
+    ├── review.routes.ts
+    └── stats.routes.ts
+
+prisma/
+├── schema.prisma        # Database schema
+├── migrations/          # Migration files
+└── seed.ts             # Database seeder
+
+api/
+└── index.ts            # Vercel serverless
 ```
 
-3. Set environment variables in Vercel:
+## Database Models
 
-```bash
-vercel env add DATABASE_URL
-vercel env add BETTER_AUTH_SECRET
-vercel env add BETTER_AUTH_URL
-vercel env add TRUSTED_ORIGIN
-```
+- **User** - Customers, sellers, admins
+- **Medicine** - Products with stock
+- **Category** - Product categories
+- **Order** - Customer orders
+- **OrderItem** - Order line items
+- **Review** - Product reviews
+- **SellerApplication** - Seller requests
+- **Session** - Auth sessions
+- **Account** - OAuth accounts
+- **Verification** - Email tokens
 
-Or set them in Vercel Dashboard under Project Settings > Environment Variables.
+## Scripts
 
-4. Deploy:
+| Script | Description |
+|--------|-------------|
+| `npm run dev` | Development server |
+| `npm run build` | Build for production |
+| `npm start` | Production server |
+| `npm run db:migrate` | Run migrations |
+| `npm run db:push` | Push schema |
+| `npm run db:studio` | Open Prisma Studio |
+
+## Deployment
+
+### Vercel (Recommended)
 
 ```bash
 vercel --prod
 ```
 
-### Important Notes
+Required environment variables:
+- `DATABASE_URL` (with `?sslmode=require`)
+- `BETTER_AUTH_SECRET`
+- `BETTER_AUTH_URL`
+- `TRUSTED_ORIGIN`
+- `SMTP_USER`
+- `SMTP_PASS`
 
-- Make sure your `DATABASE_URL` includes `?sslmode=require` for production databases
-- The `vercel-build` script automatically runs Prisma migrations
-- Prisma client is generated during build
-- Binary targets are configured for Vercel's serverless environment
+## Author
 
-## API Endpoints
+**Abdul Jabbar Al Nahid** - [abnahid.com](https://abnahid.com)
 
-### Authentication
+## License
 
-- `POST /api/auth/sign-up/email` - Sign up
-- `POST /api/auth/sign-in/email` - Sign in
-- `POST /api/auth/sign-out` - Sign out
-- `GET /api/auth/session` - Get session
-
-### Medicines
-
-- `GET /api/medicines` - Get all medicines
-- `POST /api/medicines` - Create medicine (seller/admin)
-- `PUT /api/medicines/:id` - Update medicine (seller/admin)
-- `DELETE /api/medicines/:id` - Delete medicine (seller/admin)
-
-### Categories
-
-- `GET /api/categories` - Get all categories
-- `GET /api/categories/:id` - Get category
-- `POST /api/categories` - Create category (admin)
-- `PUT /api/categories/:id` - Update category (admin)
-- `DELETE /api/categories/:id` - Delete category (admin)
-
-### Reviews
-
-- `GET /api/reviews` - Get all reviews
-- `GET /api/reviews/medicine/:medicineId` - Get reviews for medicine
-- `GET /api/reviews/:id` - Get review
-- `POST /api/reviews` - Create review (authenticated)
-- `PUT /api/reviews/:id` - Update review (author/admin)
-- `DELETE /api/reviews/:id` - Delete review (author/admin)
-
-### Health
-
-- `GET /health` - Health check
-
-## Database Management
-
-### View data
-
-```bash
-npx prisma studio
-```
-
-### Create migration
-
-```bash
-npx prisma migrate dev --name migration_name
-```
-
-### Deploy migrations (production)
-
-```bash
-npx prisma migrate deploy
-```
-
-### Reset database (development only)
-
-```bash
-npx prisma migrate reset
-```
-
-## Scripts
-
-- `npm run dev` - Start development server with hot reload
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npm run vercel-build` - Build script for Vercel (auto-runs migrations)
-
-## Tech Stack
-
-- **Runtime**: Node.js
-- **Framework**: Express.js
-- **Language**: TypeScript
-- **Database**: PostgreSQL
-- **ORM**: Prisma
-- **Auth**: Better Auth
-- **Email**: Resend (optional)
-- **Deployment**: Vercel Serverless Functions
-
-## Project Structure
-
-```
-server/
-├── api/              # Vercel serverless functions
-│   └── index.ts
-├── prisma/           # Database schema and migrations
-│   ├── schema.prisma
-│   ├── seed.ts
-│   └── migrations/
-├── src/
-│   ├── index.ts      # Main Express app
-│   ├── lib/          # Utilities (auth, prisma client)
-│   ├── middleware/   # Auth middleware
-│   └── routes/       # API routes
-├── vercel.json       # Vercel configuration
-└── package.json
-```
-
-## Environment Variables
-
-| Variable             | Description                  | Required |
-| -------------------- | ---------------------------- | -------- |
-| `DATABASE_URL`       | PostgreSQL connection string | Yes      |
-| `BETTER_AUTH_SECRET` | Secret key for auth          | Yes      |
-| `BETTER_AUTH_URL`    | Auth callback URL            | Yes      |
-| `TRUSTED_ORIGIN`     | CORS allowed origin          | Yes      |
-| `RESEND_API_KEY`     | Resend API key for emails    | No       |
-
-## Support
-
-For issues or questions, please create an issue in the repository.
+MIT License - see [LICENSE](../LICENSE)

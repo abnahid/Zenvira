@@ -92,8 +92,8 @@ export default function CategoryRow() {
   }
 
   return (
-    <div className="w-full border-b py-6">
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="w-full">
+      <div className="max-w-7xl mx-auto px-4 border-b py-6">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
           {categories.map((category, index) => {
             const Icon = getIconForCategory(category, index);

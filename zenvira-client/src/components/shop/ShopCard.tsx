@@ -172,13 +172,14 @@ const ShopCard = ({
           </div>
 
           <div className="flex gap-5 flex-wrap justify-center">
-            <button
+            <Button
               onClick={() => onPageChange?.(page - 1)}
               disabled={!pagination.hasPrevPage}
               variant="outline"
+              className="w-10 h-10 rounded-full"
             >
               <FaArrowLeftLong />
-            </button>
+            </Button>
 
             {/* Page Numbers */}
             {Array.from({ length: pagination.totalPages }).map((_, i) => {
@@ -207,13 +208,14 @@ const ShopCard = ({
               );
             })}
 
-            <button
+            <Button
               onClick={() => onPageChange?.(page + 1)}
               disabled={!pagination.hasNextPage}
               variant="outline"
+              className="w-10 h-10 rounded-full"
             >
               <FaArrowRightLong />
-            </button>
+            </Button>
           </div>
         </div>
       )}

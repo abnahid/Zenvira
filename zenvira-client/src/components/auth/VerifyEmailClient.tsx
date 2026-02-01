@@ -5,7 +5,7 @@ import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FiAlertCircle, FiCheck, FiLoader, FiMail } from "react-icons/fi";
+import { FiAlertCircle, FiCheck, FiLoader } from "react-icons/fi";
 
 const VerifyEmailClient = () => {
   const searchParams = useSearchParams();
@@ -26,7 +26,9 @@ const VerifyEmailClient = () => {
     const verifyEmail = async () => {
       try {
         const { error } = await authClient.verifyEmail({
-          token,
+          query: {
+            token,
+          },
         });
 
         if (error) {

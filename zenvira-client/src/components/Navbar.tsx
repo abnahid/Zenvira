@@ -217,9 +217,6 @@ export default function Navbar({ className }: { className?: string }) {
             <Link href="/blog">
               <NavLink active={pathname.startsWith("/blog")}>Blog</NavLink>
             </Link>
-            <Link href="/pages">
-              <NavLink active={false}>Pages</NavLink>
-            </Link>
             <Link href="/contact">
               <NavLink active={pathname.startsWith("/contact")}>
                 Contact
