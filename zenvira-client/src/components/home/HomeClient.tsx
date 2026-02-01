@@ -1,5 +1,6 @@
 import CategoryRow from "./CategoryRow";
 import FeaturedProducts from "./FeaturedProducts";
+import HotOfferSection from "./getTimeParts";
 import PromoGrid from "./PromoGrid";
 
 const HomeClient = () => {
@@ -8,6 +9,7 @@ const HomeClient = () => {
       <PromoGrid />
       <CategoryRow />
       <FeaturedProducts />
+      <HotOfferSection />
     </div>
   );
 };
