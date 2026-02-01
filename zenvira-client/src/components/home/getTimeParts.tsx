@@ -63,55 +63,54 @@ export default function HotOfferSection() {
   const { days, hours, minutes, secs } = getTimeParts(timeLeft);
 
   return (
-    <section className="bg-gray-50 py-16">
-      <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+    <section className="bg-gray-50 py-10 sm:py-16">
+      <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center">
         {/* LEFT CONTENT */}
         <div>
-          <span className="text-sm text-primary font-semibold">
-            Today’s Hot Offer
+          <span className="text-xs sm:text-sm text-primary font-semibold">
+            Today&apos;s Hot Offer
           </span>
 
-          <h2 className="text-4xl font-bold mt-2 mb-4 leading-tight">
-            Free Covid-19 Vaccine <br />
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mt-2 mb-4 leading-tight">
+            Free Covid-19 Vaccine <br className="hidden sm:block" />
             Campaign Ticket
           </h2>
 
-          <p className="text-gray-600 max-w-md mb-6">
+          <p className="text-gray-600 max-w-md mb-6 text-sm sm:text-base">
             Cur tantas regiones barbarorum oblit, tot maria transmitt summo bono
             fruittur et voluptate barbarorum.
           </p>
 
           {/* TIMER */}
-          <div className="flex gap-4 mb-6">
+          <div className="flex gap-2 sm:gap-4 mb-6">
             <TimerBox label="Days" value={days} />
             <TimerBox label="Hours" value={hours} />
-            <TimerBox label="Minutes" value={minutes} highlight />
-            <TimerBox label="Seconds" value={secs} />
+            <TimerBox label="Min" value={minutes} highlight />
+            <TimerBox label="Sec" value={secs} />
           </div>
 
           {/* BUTTONS */}
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-3 sm:gap-4">
             <Link href="/shops">
-              <button className="bg-primary text-white px-6 py-3 rounded-md hover:bg-primary/90 transition">
+              <button className="bg-primary text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-md hover:bg-primary/90 transition text-sm sm:text-base">
                 Shop Now
               </button>
             </Link>
 
-            <button className="text-primary font-medium hover:underline">
+            <button className="text-primary font-medium hover:underline text-sm sm:text-base">
               Deal of the Day
             </button>
           </div>
         </div>
 
         {/* RIGHT IMAGE PLACEHOLDER */}
-        <div className="flex justify-center">
-          <div className="relative w-full max-w-lg aspect-square  flex items-center justify-center">
-            {/* Replace this Image with your real one */}
+        <div className="flex justify-center order-first lg:order-last">
+          <div className="relative w-full max-w-xs sm:max-w-md lg:max-w-lg aspect-square flex items-center justify-center">
             <Image
               src="/assets/ilastration.svg"
               alt="Offer Illustration"
               fill
-              className="object-contain p-6"
+              className="object-contain p-4 sm:p-6"
             />
           </div>
         </div>
@@ -131,23 +130,25 @@ function TimerBox({
   highlight?: boolean;
 }) {
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div className="flex flex-col items-center gap-1 sm:gap-2">
       <div
-        className={`px-6 py-4 rounded-lg text-center min-w-[90px] transition ${
+        className={`px-3 sm:px-5 md:px-6 py-2 sm:py-3 md:py-4 rounded-lg text-center min-w-14 sm:min-w-20 transition ${
           highlight
             ? "bg-primary text-white shadow-lg"
             : "bg-white text-gray-900 shadow"
         }`}
       >
         <div
-          className={`text-3xl font-bold ${
+          className={`text-xl sm:text-2xl md:text-3xl font-bold ${
             highlight ? "text-white" : "text-primary"
           }`}
         >
           {String(value).padStart(2, "0")}
         </div>
       </div>
-      <div className="text-lg font-medium text-gray-900">{label}</div>
+      <div className="text-xs sm:text-sm md:text-base font-medium text-gray-900">
+        {label}
+      </div>
     </div>
   );
 }

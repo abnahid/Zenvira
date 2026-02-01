@@ -96,7 +96,7 @@ const ProductCard = ({ product, viewType = "grid" }: ProductCardProps) => {
   if (viewType === "list") {
     return (
       <div className="group border rounded-lg overflow-hidden bg-white hover:shadow-lg transition">
-        <div className="flex gap-4 p-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 p-3 sm:p-4">
           {/* Image */}
           <div className="relative overflow-hidden rounded-lg bg-gray-100 shrink-0">
             <Link href={`/products/${product.slug}`}>
@@ -105,7 +105,7 @@ const ProductCard = ({ product, viewType = "grid" }: ProductCardProps) => {
                 alt={product.name}
                 width={200}
                 height={200}
-                className="w-48 h-48 object-cover transition-transform duration-500 group-hover:scale-110"
+                className="w-full sm:w-36 md:w-44 lg:w-48 h-48 sm:h-36 md:h-44 lg:h-48 object-cover transition-transform duration-500 group-hover:scale-110"
               />
             </Link>
 
@@ -124,23 +124,23 @@ const ProductCard = ({ product, viewType = "grid" }: ProductCardProps) => {
           </div>
 
           {/* Info */}
-          <div className="flex-1 flex flex-col justify-between py-2">
+          <div className="flex-1 flex flex-col justify-between py-1 sm:py-2">
             <div>
-              <p className="text-sm text-gray-500 mb-1">
+              <p className="text-xs sm:text-sm text-gray-500 mb-1">
                 {product.category.name}
               </p>
 
               <Link href={`/shops/${product.slug}`}>
-                <h3 className="font-semibold text-lg text-gray-900 hover:text-primary transition mb-2">
+                <h3 className="font-semibold text-base sm:text-lg text-gray-900 hover:text-primary transition mb-1 sm:mb-2 line-clamp-2">
                   {product.name}
                 </h3>
               </Link>
 
               {/* Rating */}
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-2 sm:mb-3">
                 <div className="flex text-yellow-400">
                   {[...Array(5)].map((_, i) => (
-                    <span key={i} className="text-sm">
+                    <span key={i} className="text-xs sm:text-sm">
                       {i < Math.floor(rating) ? "★" : "☆"}
                     </span>
                   ))}
@@ -148,19 +148,19 @@ const ProductCard = ({ product, viewType = "grid" }: ProductCardProps) => {
                 <span className="text-xs text-gray-600">({reviewCount})</span>
               </div>
 
-              {/* Description */}
-              <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+              {/* Description - Hidden on small mobile */}
+              <p className="hidden sm:block text-sm text-gray-600 line-clamp-2 mb-3">
                 {product.description}
               </p>
 
               {/* Price */}
-              <div className="flex gap-2 items-center mb-3">
-                <span className="font-semibold text-lg text-black">
+              <div className="flex gap-2 items-center mb-2 sm:mb-3">
+                <span className="font-semibold text-base sm:text-lg text-black">
                   ${product.price.toFixed(2)}
                 </span>
 
                 {product.oldPrice && (
-                  <span className="line-through text-red-500">
+                  <span className="line-through text-red-500 text-sm">
                     ${product.oldPrice.toFixed(2)}
                   </span>
                 )}
@@ -168,14 +168,14 @@ const ProductCard = ({ product, viewType = "grid" }: ProductCardProps) => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3">
+            <div className="flex gap-2 sm:gap-3">
               <button
                 onClick={handleAddToCart}
                 disabled={product.stock === 0 || isAddingToCart}
                 className="p-2 border rounded-lg text-gray-600 hover:bg-primary hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
                 title={product.stock === 0 ? "Out of stock" : "Add to cart"}
               >
-                <FaShoppingCart size={16} />
+                <FaShoppingCart size={14} className="sm:w-4 sm:h-4" />
               </button>
 
               <button
@@ -187,7 +187,7 @@ const ProductCard = ({ product, viewType = "grid" }: ProductCardProps) => {
                 }`}
                 title={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
               >
-                <FaHeart size={16} />
+                <FaHeart size={14} className="sm:w-4 sm:h-4" />
               </button>
 
               <Link
@@ -195,7 +195,7 @@ const ProductCard = ({ product, viewType = "grid" }: ProductCardProps) => {
                 className="p-2 border rounded-lg text-gray-600 hover:bg-primary hover:text-white transition"
                 title="View details"
               >
-                <FaSearchPlus size={16} />
+                <FaSearchPlus size={14} className="sm:w-4 sm:h-4" />
               </Link>
             </div>
           </div>
@@ -216,75 +216,75 @@ const ProductCard = ({ product, viewType = "grid" }: ProductCardProps) => {
             alt={product.name}
             width={270}
             height={370}
-            className="w-full h-72 object-cover transition-transform duration-500 group-hover:scale-110"
+            className="w-full h-48 sm:h-56 md:h-64 lg:h-72 object-cover transition-transform duration-500 group-hover:scale-110"
           />
         </Link>
 
         {/* Stock Badge */}
         {product.stock <= 10 && product.stock > 0 && (
-          <span className="absolute top-4 left-4 bg-orange-500 text-white text-xs px-2 py-1 rounded">
+          <span className="absolute top-2 sm:top-4 left-2 sm:left-4 bg-orange-500 text-white text-xs px-2 py-1 rounded">
             Low Stock
           </span>
         )}
 
         {product.stock === 0 && (
-          <span className="absolute top-4 left-4 bg-red-500 text-white text-xs px-2 py-1 rounded">
+          <span className="absolute top-2 sm:top-4 left-2 sm:left-4 bg-red-500 text-white text-xs px-2 py-1 rounded">
             Out of Stock
           </span>
         )}
 
-        {/* Hover Icons */}
-        <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 translate-x-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0">
+        {/* Hover Icons - Always visible on mobile (touch devices don't have hover) */}
+        <div className="absolute top-2 sm:top-4 right-2 sm:right-4 flex flex-col gap-1.5 sm:gap-2 opacity-100 sm:opacity-0 sm:translate-x-4 transition-all duration-300 sm:group-hover:opacity-100 sm:group-hover:translate-x-0">
           <button
             onClick={handleAddToCart}
             disabled={product.stock === 0 || isAddingToCart}
-            className="w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-700 hover:bg-primary hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-8 h-8 sm:w-9 sm:h-9 bg-white rounded-full flex items-center justify-center text-gray-700 hover:bg-primary hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
             title={product.stock === 0 ? "Out of stock" : "Add to cart"}
           >
-            <FaShoppingCart size={14} />
+            <FaShoppingCart size={12} className="sm:w-3.5 sm:h-3.5" />
           </button>
 
           <button
             onClick={handleToggleWishlist}
-            className={`w-9 h-9 rounded-full flex items-center justify-center transition ${
+            className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition shadow-sm ${
               inWishlist
                 ? "bg-red-500 text-white"
                 : "bg-white text-gray-700 hover:bg-primary hover:text-white"
             }`}
             title={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
           >
-            <FaHeart size={14} />
+            <FaHeart size={12} className="sm:w-3.5 sm:h-3.5" />
           </button>
 
           <Link
             href={`/shops/${product.slug}`}
-            className="w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-700 hover:bg-primary hover:text-white transition"
+            className="w-8 h-8 sm:w-9 sm:h-9 bg-white rounded-full flex items-center justify-center text-gray-700 hover:bg-primary hover:text-white transition shadow-sm"
             title="View details"
           >
-            <FaSearchPlus size={14} />
+            <FaSearchPlus size={12} className="sm:w-3.5 sm:h-3.5" />
           </Link>
         </div>
       </div>
 
       {/* Info */}
-      <div className="mt-3">
-        <p className="text-xs text-gray-500 mb-1">{product.category.name}</p>
+      <div className="mt-2 sm:mt-3">
+        <p className="text-xs text-gray-500 mb-0.5 sm:mb-1">{product.category.name}</p>
 
         <Link href={`/shops/${product.slug}`}>
-          <h3 className="font-semibold text-gray-900 hover:text-primary transition">
+          <h3 className="font-semibold text-sm sm:text-base text-gray-900 hover:text-primary transition line-clamp-1">
             {product.name}
           </h3>
         </Link>
 
-        <p className="text-xs text-gray-400 mt-1">by {product.manufacturer}</p>
+        <p className="text-xs text-gray-400 mt-0.5 sm:mt-1 hidden sm:block">by {product.manufacturer}</p>
 
-        <div className="flex gap-2 items-center text-sm mt-2">
+        <div className="flex gap-1.5 sm:gap-2 items-center text-xs sm:text-sm mt-1 sm:mt-2">
           <span className="font-semibold text-black">
             ${product.price.toFixed(2)}
           </span>
 
           {product.oldPrice && (
-            <span className="line-through text-red-500">
+            <span className="line-through text-red-500 text-xs">
               ${product.oldPrice.toFixed(2)}
             </span>
           )}

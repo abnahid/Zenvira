@@ -33,29 +33,29 @@ export default function FeaturedProducts() {
   }, []);
 
   return (
-    <section className="max-w-7xl mx-auto px-4 py-16">
+    <section className="max-w-7xl mx-auto px-4 py-10 sm:py-16">
       {/* Header */}
-      <div className="text-center mb-10">
-        <h2 className="text-3xl font-bold mb-2">Featured Products</h2>
-        <p className="text-gray-500 text-sm">
+      <div className="text-center mb-8 sm:mb-10">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-2">Featured Products</h2>
+        <p className="text-gray-500 text-xs sm:text-sm">
           Discover our carefully selected medical and healthcare products
         </p>
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
           {[...Array(6)].map((_, index) => (
             <div key={index} className="animate-pulse">
-              <div className="bg-gray-200 h-72 rounded-lg mb-3" />
+              <div className="bg-gray-200 h-48 sm:h-72 rounded-lg mb-3" />
               <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
               <div className="h-4 bg-gray-200 rounded w-1/2" />
             </div>
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* LEFT: PROMO CARDS */}
-          <div className="flex flex-col gap-6 h-full">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
+          {/* LEFT: PROMO CARDS - Hidden on mobile, shown on lg */}
+          <div className="hidden lg:flex flex-col gap-6 h-full">
             {/* Promo Card 1 */}
             <div className="rounded-xl bg-emerald-50 p-6 flex flex-col justify-between flex-1">
               <div>
@@ -63,7 +63,7 @@ export default function FeaturedProducts() {
                   Mask & Covid
                 </span>
 
-                <h3 className="text-2xl font-bold mt-2 mb-4">
+                <h3 className="text-xl xl:text-2xl font-bold mt-2 mb-4">
                   50% off in Covid Vaccine
                 </h3>
 
@@ -93,7 +93,7 @@ export default function FeaturedProducts() {
                   — 59% OFF
                 </span>
 
-                <h3 className="text-2xl font-bold mt-2 mb-4">
+                <h3 className="text-xl xl:text-2xl font-bold mt-2 mb-4">
                   Antiseptic Dry Hand Gel
                 </h3>
 
@@ -118,7 +118,7 @@ export default function FeaturedProducts() {
           </div>
 
           {/* RIGHT: PRODUCT CARDS */}
-          <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-3 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
             {products.map((product) => (
               <ProductCard key={product.id} product={product} viewType="grid" />
             ))}
