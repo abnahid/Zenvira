@@ -109,6 +109,53 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Get single medicine by ID (for editing)
+router.get(
+  "/id/:id",
+  requireAuth,
+  requireRole("seller", "admin"),
+  async (req: AuthRequest, res) => {
+    try {
+      const id = req.params.id;
+
+      const medicine = await prisma.medicine.findUnique({
+        where: { id },
+        include: {
+          category: true,
+          seller: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              email: true,
+            },
+          },
+        },
+      });
+
+      if (!medicine) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Medicine not found" });
+      }
+
+      // Check ownership (sellers can only fetch their own medicines)
+      if (req.user?.role !== "admin" && medicine.sellerId !== req.user?.id) {
+        return res
+          .status(403)
+          .json({ success: false, message: "Access denied" });
+      }
+
+      return res.json({ success: true, data: medicine });
+    } catch (error) {
+      console.error("Get medicine by ID error:", error);
+      return res
+        .status(500)
+        .json({ success: false, message: "Failed to fetch medicine" });
+    }
+  },
+);
+
 // Get single medicine by slug
 router.get("/:slug", async (req, res) => {
   try {

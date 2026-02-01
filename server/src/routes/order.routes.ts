@@ -8,6 +8,204 @@ import {
 
 const router = Router();
 
+// Get seller's orders (orders containing their products)
+router.get(
+  "/seller",
+  requireAuth,
+  requireRole("seller", "admin"),
+  async (req: AuthRequest, res) => {
+    try {
+      const sellerId = req.user?.id;
+      const isAdmin = req.user?.role === "admin";
+
+      // Pagination
+      const page = Math.max(1, parseInt(req.query.page as string) || 1);
+      const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 10));
+      const skip = (page - 1) * limit;
+
+      // Filter by status
+      const status = req.query.status as string;
+
+      // Find orders that contain seller's medicines
+      const whereItems: any = {
+        medicine: {
+          sellerId: isAdmin && req.query.sellerId
+            ? (req.query.sellerId as string)
+            : sellerId,
+        },
+      };
+
+      // Get unique order IDs that contain seller's products
+      const orderItems = await prisma.orderItem.findMany({
+        where: whereItems,
+        select: { orderId: true },
+        distinct: ["orderId"],
+      });
+
+      const orderIds = orderItems.map((item) => item.orderId);
+
+      const whereOrder: any = {
+        id: { in: orderIds },
+      };
+
+      if (status) {
+        whereOrder.status = status;
+      }
+
+      const total = await prisma.order.count({ where: whereOrder });
+
+      const orders = await prisma.order.findMany({
+        where: whereOrder,
+        include: {
+          customer: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+          items: {
+            where: {
+              medicine: {
+                sellerId: isAdmin && req.query.sellerId
+                  ? (req.query.sellerId as string)
+                  : sellerId,
+              },
+            },
+            include: {
+              medicine: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  images: true,
+                  price: true,
+                  sellerId: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      });
+
+      // Calculate seller's total for each order
+      const ordersWithSellerTotal = orders.map((order) => {
+        const sellerTotal = order.items.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0
+        );
+        const totalItems = order.items.reduce((sum, item) => sum + item.quantity, 0);
+        return {
+          ...order,
+          sellerTotal,
+          totalItems,
+        };
+      });
+
+      const totalPages = Math.ceil(total / limit);
+
+      res.json({
+        success: true,
+        data: ordersWithSellerTotal,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1,
+        },
+      });
+    } catch (error) {
+      console.error("Get seller orders error:", error);
+      res.status(500).json({ success: false, message: "Failed to fetch seller orders" });
+    }
+  },
+);
+
+// Get single order for seller (with their items only)
+router.get(
+  "/seller/:id",
+  requireAuth,
+  requireRole("seller", "admin"),
+  async (req: AuthRequest, res) => {
+    try {
+      const orderId = req.params.id;
+      const sellerId = req.user?.id;
+      const isAdmin = req.user?.role === "admin";
+
+      const order = await prisma.order.findUnique({
+        where: { id: orderId },
+        include: {
+          customer: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+          items: {
+            include: {
+              medicine: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  images: true,
+                  price: true,
+                  manufacturer: true,
+                  sellerId: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!order) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Order not found" });
+      }
+
+      // Filter items to only show seller's products
+      const sellerItems = order.items.filter(
+        (item) => isAdmin || item.medicine.sellerId === sellerId
+      );
+
+      if (sellerItems.length === 0) {
+        return res
+          .status(403)
+          .json({ success: false, message: "No items from this seller in this order" });
+      }
+
+      const sellerTotal = sellerItems.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+      );
+      const totalItems = sellerItems.reduce((sum, item) => sum + item.quantity, 0);
+
+      res.json({
+        success: true,
+        data: {
+          ...order,
+          items: sellerItems,
+          sellerTotal,
+          totalItems,
+        },
+      });
+    } catch (error) {
+      console.error("Get seller order error:", error);
+      res.status(500).json({ success: false, message: "Failed to fetch order" });
+    }
+  },
+);
+
 // Get all orders (customers see their own, admin sees all)
 router.get("/", requireAuth, async (req: AuthRequest, res) => {
   try {
@@ -285,6 +483,8 @@ router.put(
     try {
       const id = req.params.id;
       const { status } = req.body;
+      const sellerId = req.user?.id;
+      const isAdmin = req.user?.role === "admin";
 
       const validStatuses = ["placed", "confirmed", "shipped", "delivered", "cancelled"];
       if (!status || !validStatuses.includes(status)) {
@@ -296,13 +496,33 @@ router.put(
 
       const order = await prisma.order.findUnique({
         where: { id },
-        include: { items: true },
+        include: {
+          items: {
+            include: {
+              medicine: {
+                select: { sellerId: true },
+              },
+            },
+          },
+        },
       });
 
       if (!order) {
         return res
           .status(404)
           .json({ success: false, message: "Order not found" });
+      }
+
+      // Sellers can only update orders containing their products
+      if (!isAdmin) {
+        const hasSellerItems = order.items.some(
+          (item) => item.medicine.sellerId === sellerId
+        );
+        if (!hasSellerItems) {
+          return res
+            .status(403)
+            .json({ success: false, message: "Access denied" });
+        }
       }
 
       // If cancelling, restore stock
