@@ -15,14 +15,14 @@ interface MenuItem {
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
-  title: string;
-  menuItems: MenuItem[];
+  title?: string;
+  menuItems?: MenuItem[];
 }
 
 export default function DashboardLayout({
   children,
-  title,
-  menuItems,
+  title = "Dashboard",
+  menuItems = [],
 }: DashboardLayoutProps) {
   const { user, logout } = useAuth();
   const router = useRouter();
@@ -39,22 +39,24 @@ export default function DashboardLayout({
       <aside
         className={`${
           sidebarOpen ? "w-64" : "w-20"
-        } bg-primary text-white transition-all duration-300 flex flex-col fixed h-screen z-40 overflow-y-auto shadow-lg`}
+        } bg-slate-900 text-white transition-all duration-300 flex flex-col fixed h-screen z-40 overflow-y-auto shadow-lg`}
       >
         {/* Logo Section */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-white/20">
+        <div className="flex items-center justify-between h-16 px-4 border-b border-white/15 bg-black/10">
           {sidebarOpen && (
             <Image
               src="/logo-zenvira.svg"
-              alt="Logo"
-              className="bg-accent p-1"
-              width={180}
-              height={36}
+              alt="Zenvira"
+              width={160}
+              height={32}
+              className="h-8 w-auto brightness-95"
+              priority
             />
           )}
+
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-1.5 hover:bg-white/20 rounded-lg transition"
+            className="p-2 hover:bg-white/10 rounded-lg transition"
           >
             {sidebarOpen ? <FiX size={20} /> : <FiMenu size={20} />}
           </button>
@@ -62,20 +64,22 @@ export default function DashboardLayout({
 
         {/* Navigation Menu */}
         <nav className="flex-1 px-3 py-6 space-y-1">
-          {menuItems.map((item, index) => (
-            <Link
-              key={index}
-              href={item.href}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg text-white hover:bg-white/20 transition-all duration-200 group"
-            >
-              <span className="text-xl shrink-0 group-hover:scale-110 transition-transform">
-                {item.icon}
-              </span>
-              {sidebarOpen && (
-                <span className="text-sm font-medium">{item.label}</span>
-              )}
-            </Link>
-          ))}
+          {menuItems &&
+            menuItems.length > 0 &&
+            menuItems.map((item, index) => (
+              <Link
+                key={index}
+                href={item.href}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-white hover:bg-white/20 transition-all duration-200 group"
+              >
+                <span className="text-xl shrink-0 group-hover:scale-110 transition-transform">
+                  {item.icon}
+                </span>
+                {sidebarOpen && (
+                  <span className="text-sm font-medium">{item.label}</span>
+                )}
+              </Link>
+            ))}
         </nav>
 
         {/* User Profile Section */}

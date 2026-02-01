@@ -4,44 +4,13 @@ import Link from "next/link";
 import {
   FiBox,
   FiDollarSign,
-  FiHome,
-  FiSettings,
   FiShoppingCart,
   FiTrendingUp,
 } from "react-icons/fi";
-import DashboardLayout from "./DashboardLayout";
 
 export default function SellerDashboard() {
-  const menuItems = [
-    {
-      label: "Dashboard",
-      icon: <FiHome size={20} />,
-      href: "/dashboard",
-    },
-    {
-      label: "My Products",
-      icon: <FiBox size={20} />,
-      href: "/dashboard/my-products",
-    },
-    {
-      label: "Orders",
-      icon: <FiShoppingCart size={20} />,
-      href: "/dashboard/my-orders",
-    },
-    {
-      label: "Sales",
-      icon: <FiDollarSign size={20} />,
-      href: "/dashboard/sales",
-    },
-    {
-      label: "Settings",
-      icon: <FiSettings size={20} />,
-      href: "/dashboard/settings",
-    },
-  ];
-
   return (
-    <DashboardLayout title="Seller Dashboard" menuItems={menuItems}>
+    <>
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard
@@ -164,7 +133,7 @@ export default function SellerDashboard() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }
 

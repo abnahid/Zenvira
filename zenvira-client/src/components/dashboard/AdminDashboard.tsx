@@ -1,58 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import {
-  FiBox,
-  FiDollarSign,
-  FiHome,
-  FiPackage,
-  FiSettings,
-  FiShoppingCart,
-  FiUsers,
-} from "react-icons/fi";
-import DashboardLayout from "./DashboardLayout";
+import { FiBox, FiDollarSign, FiShoppingCart, FiUsers } from "react-icons/fi";
 
 export default function AdminDashboard() {
-  const menuItems = [
-    {
-      label: "Dashboard",
-      icon: <FiHome size={20} />,
-      href: "/dashboard",
-    },
-    {
-      label: "Orders",
-      icon: <FiShoppingCart size={20} />,
-      href: "/dashboard/orders",
-    },
-    {
-      label: "Products",
-      icon: <FiBox size={20} />,
-      href: "/dashboard/products",
-    },
-    {
-      label: "Categories",
-      icon: <FiPackage size={20} />,
-      href: "/dashboard/categories",
-    },
-    {
-      label: "Users",
-      icon: <FiUsers size={20} />,
-      href: "/dashboard/users",
-    },
-    {
-      label: "Revenue",
-      icon: <FiDollarSign size={20} />,
-      href: "/dashboard/revenue",
-    },
-    {
-      label: "Settings",
-      icon: <FiSettings size={20} />,
-      href: "/dashboard/settings",
-    },
-  ];
-
   return (
-    <DashboardLayout title="Admin Dashboard" menuItems={menuItems}>
+    <>
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard
@@ -157,7 +110,7 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }
 
