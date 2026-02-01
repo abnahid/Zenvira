@@ -479,6 +479,20 @@ export const auth = betterAuth({
       });
     },
   },
+  callbacks: {
+    async onUserCreate({ user }) {
+      try {
+        await prisma.user.update({
+          where: { email: user.email },
+          data: { emailVerified: true },
+        });
+
+        console.log(`✓ Auto-verified email for ${user.email}`);
+      } catch (err) {
+        console.error("Auto-verify failed:", err);
+      }
+    },
+  },
   advanced: {
     useSecureCookies: false,
     disableCSRFCheck: true,

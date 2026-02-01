@@ -153,7 +153,7 @@ model Verification {
 
 model SellerApplication {
   id        String   @id @default(uuid())
-  userId   String   @unique
+  userId    String   @unique
   storeName String
   phone     String
   address   String
