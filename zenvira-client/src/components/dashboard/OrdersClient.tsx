@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { apiUrl } from "@/lib/api";
 import { useCallback, useEffect, useState } from "react";
@@ -22,20 +23,28 @@ interface OrderItem {
     name: string;
     slug: string;
     images: string[];
+    sellerId?: string;
   };
 }
 
 interface Order {
   id: string;
   status: "placed" | "confirmed" | "shipped" | "delivered" | "cancelled";
-  totalAmount: number;
-  sellerTotal: number;
-  totalItems: number;
+  total: number;
+  sellerTotal?: number;
+  totalItems?: number;
+  paymentMethod: string;
+  paymentStatus: string;
+  shippingName: string;
+  shippingPhone: string;
+  shippingEmail: string;
+  address: string;
   createdAt: string;
   customer: {
     id: string;
     name: string;
     email: string;
+    image?: string;
   };
   items: OrderItem[];
 }
@@ -50,26 +59,15 @@ interface PaginationInfo {
 }
 
 const STATUS_OPTIONS = [
-  { value: "placed", label: "Placed", color: "bg-blue-100 text-blue-800" },
-  {
-    value: "confirmed",
-    label: "Confirmed",
-    color: "bg-purple-100 text-purple-800",
-  },
-  {
-    value: "shipped",
-    label: "Shipped",
-    color: "bg-yellow-100 text-yellow-800",
-  },
-  {
-    value: "delivered",
-    label: "Delivered",
-    color: "bg-green-100 text-green-800",
-  },
+  { value: "placed", label: "Placed", color: "bg-yellow-100 text-yellow-800" },
+  { value: "confirmed", label: "Confirmed", color: "bg-blue-100 text-blue-800" },
+  { value: "shipped", label: "Shipped", color: "bg-purple-100 text-purple-800" },
+  { value: "delivered", label: "Delivered", color: "bg-green-100 text-green-800" },
   { value: "cancelled", label: "Cancelled", color: "bg-red-100 text-red-800" },
 ];
 
 export default function OrdersClient() {
+  const { user } = useAuth();
   const { addToast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
@@ -79,6 +77,8 @@ export default function OrdersClient() {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+
+  const isAdmin = user?.role === "admin";
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -92,29 +92,19 @@ export default function OrdersClient() {
         params.append("status", statusFilter);
       }
 
-      // Try seller endpoint first, fallback to regular orders endpoint
-      let endpoint = `/api/orders/seller?${params}`;
-      let response = await fetch(apiUrl(endpoint), {
+      // Admin fetches all orders, seller fetches their orders
+      const endpoint = isAdmin
+        ? `/api/orders?${params}`
+        : `/api/orders/seller?${params}`;
+
+      const response = await fetch(apiUrl(endpoint), {
         credentials: "include",
       });
-
-      if (
-        !response.ok &&
-        (response.status === 404 || response.status === 500)
-      ) {
-        console.log(
-          "Seller endpoint not available, trying regular endpoint...",
-        );
-        endpoint = `/api/orders?${params}`;
-        response = await fetch(apiUrl(endpoint), {
-          credentials: "include",
-        });
-      }
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `Server error: ${response.status}`,
+          errorData.message || `Server error: ${response.status}`
         );
       }
 
@@ -124,19 +114,14 @@ export default function OrdersClient() {
       setIsInitialLoad(false);
     } catch (error) {
       console.error("Error fetching orders:", error);
-      // Set empty state instead of showing error
       setOrders([]);
       setPagination(null);
       setIsInitialLoad(false);
-      // Show user-friendly message
-      addToast(
-        "No orders found. This feature may not be available yet.",
-        "info",
-      );
+      addToast("Failed to fetch orders.", "error");
     } finally {
       setLoading(false);
     }
-  }, [currentPage, statusFilter, addToast]);
+  }, [currentPage, statusFilter, isAdmin, addToast]);
 
   useEffect(() => {
     fetchOrders();
@@ -161,8 +146,8 @@ export default function OrdersClient() {
           orders.map((order) =>
             order.id === orderId
               ? { ...order, status: newStatus as Order["status"] }
-              : order,
-          ),
+              : order
+          )
         );
         addToast(`Order status updated to ${newStatus}!`, "success");
       } else {
@@ -176,9 +161,55 @@ export default function OrdersClient() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    const option = STATUS_OPTIONS.find((opt) => opt.value === status);
-    return option?.color || "bg-gray-100 text-gray-800";
+  const handlePaymentStatusUpdate = async (orderId: string, newStatus: string) => {
+    try {
+      const response = await fetch(apiUrl(`/api/orders/${orderId}/payment`), {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ paymentStatus: newStatus }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setOrders(
+          orders.map((order) =>
+            order.id === orderId
+              ? { ...order, paymentStatus: newStatus }
+              : order
+          )
+        );
+        addToast(`Payment status updated to ${newStatus}!`, "success");
+      } else {
+        addToast(data.message || "Failed to update payment status", "error");
+      }
+    } catch (error) {
+      console.error("Error updating payment status:", error);
+      addToast("Failed to update payment status", "error");
+    }
+  };
+
+  // Calculate order total for display
+  const getOrderTotal = (order: Order) => {
+    if (isAdmin) {
+      return order.total;
+    }
+    // For sellers, use sellerTotal if available, otherwise calculate from items
+    if (order.sellerTotal !== undefined) {
+      return order.sellerTotal;
+    }
+    return order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  };
+
+  // Get total items count
+  const getItemsCount = (order: Order) => {
+    if (order.totalItems !== undefined) {
+      return order.totalItems;
+    }
+    return order.items.reduce((sum, item) => sum + item.quantity, 0);
   };
 
   return (
@@ -187,7 +218,9 @@ export default function OrdersClient() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Orders</h1>
         <p className="text-gray-600 mt-1">
-          Monitor and manage all customer orders
+          {isAdmin
+            ? "Manage all platform orders"
+            : "Monitor and manage your customer orders"}
         </p>
       </div>
 
@@ -223,10 +256,12 @@ export default function OrdersClient() {
           <div className="p-8 text-center text-gray-500">Loading orders...</div>
         ) : orders.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
-            <p>No orders found yet.</p>
-            <p className="text-sm mt-2">
-              Orders will appear here once customers purchase your products.
-            </p>
+            <p>No orders found.</p>
+            {!isAdmin && (
+              <p className="text-sm mt-2">
+                Orders will appear here once customers purchase your products.
+              </p>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto relative">
@@ -252,8 +287,13 @@ export default function OrdersClient() {
                     Items
                   </th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                    Your Earnings
+                    {isAdmin ? "Total" : "Your Earnings"}
                   </th>
+                  {isAdmin && (
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                      Payment
+                    </th>
+                  )}
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                     Status
                   </th>
@@ -285,12 +325,30 @@ export default function OrdersClient() {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
-                        {order.totalItems} item
-                        {order.totalItems !== 1 ? "s" : ""}
+                        {getItemsCount(order)} item
+                        {getItemsCount(order) !== 1 ? "s" : ""}
                       </td>
                       <td className="px-6 py-4 text-sm font-semibold text-green-600">
-                        ${order.sellerTotal.toFixed(2)}
+                        ${getOrderTotal(order).toFixed(2)}
                       </td>
+                      {isAdmin && (
+                        <td className="px-6 py-4">
+                          <Select
+                            value={order.paymentStatus}
+                            onValueChange={(newStatus) =>
+                              handlePaymentStatusUpdate(order.id, newStatus)
+                            }
+                          >
+                            <SelectTrigger className="w-28">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="paid">Paid</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </td>
+                      )}
                       <td className="px-6 py-4">
                         <Select
                           value={order.status}
@@ -304,10 +362,7 @@ export default function OrdersClient() {
                           </SelectTrigger>
                           <SelectContent>
                             {STATUS_OPTIONS.map((option) => (
-                              <SelectItem
-                                key={option.value}
-                                value={option.value}
-                              >
+                              <SelectItem key={option.value} value={option.value}>
                                 {option.label}
                               </SelectItem>
                             ))}
@@ -324,7 +379,7 @@ export default function OrdersClient() {
                           className="gap-2"
                           onClick={() =>
                             setExpandedOrder(
-                              expandedOrder === order.id ? null : order.id,
+                              expandedOrder === order.id ? null : order.id
                             )
                           }
                         >
@@ -337,32 +392,87 @@ export default function OrdersClient() {
                     {/* Expanded Order Details */}
                     {expandedOrder === order.id && (
                       <tr className="bg-gray-50 border-b">
-                        <td colSpan={7} className="px-6 py-4">
+                        <td colSpan={isAdmin ? 8 : 7} className="px-6 py-4">
                           <div className="space-y-4">
+                            {/* Shipping Info for Admin */}
+                            {isAdmin && (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-white rounded-lg border">
+                                <div>
+                                  <h4 className="font-semibold text-gray-900 mb-2">
+                                    Shipping Information
+                                  </h4>
+                                  <p className="text-sm text-gray-600">
+                                    <span className="font-medium">Name:</span>{" "}
+                                    {order.shippingName}
+                                  </p>
+                                  <p className="text-sm text-gray-600">
+                                    <span className="font-medium">Phone:</span>{" "}
+                                    {order.shippingPhone}
+                                  </p>
+                                  <p className="text-sm text-gray-600">
+                                    <span className="font-medium">Email:</span>{" "}
+                                    {order.shippingEmail}
+                                  </p>
+                                  <p className="text-sm text-gray-600">
+                                    <span className="font-medium">Address:</span>{" "}
+                                    {order.address}
+                                  </p>
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold text-gray-900 mb-2">
+                                    Payment Information
+                                  </h4>
+                                  <p className="text-sm text-gray-600">
+                                    <span className="font-medium">Method:</span>{" "}
+                                    {order.paymentMethod?.toUpperCase()}
+                                  </p>
+                                  <p className="text-sm text-gray-600">
+                                    <span className="font-medium">Status:</span>{" "}
+                                    <span
+                                      className={`px-2 py-0.5 rounded text-xs font-medium ${
+                                        order.paymentStatus === "paid"
+                                          ? "bg-green-100 text-green-800"
+                                          : "bg-yellow-100 text-yellow-800"
+                                      }`}
+                                    >
+                                      {order.paymentStatus}
+                                    </span>
+                                  </p>
+                                  <p className="text-sm text-gray-600 mt-2">
+                                    <span className="font-medium">Order Total:</span>{" "}
+                                    <span className="text-lg font-bold text-green-600">
+                                      ${order.total.toFixed(2)}
+                                    </span>
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Items */}
                             <div className="flex items-center justify-between">
                               <h3 className="font-semibold text-gray-900">
-                                Your Items in This Order:
+                                {isAdmin ? "Order Items:" : "Your Items in This Order:"}
                               </h3>
-                              <div className="text-right">
-                                <p className="text-sm text-gray-600">
-                                  Your Total:
-                                </p>
-                                <p className="text-lg font-bold text-green-600">
-                                  ${order.sellerTotal.toFixed(2)}
-                                </p>
-                              </div>
+                              {!isAdmin && (
+                                <div className="text-right">
+                                  <p className="text-sm text-gray-600">Your Total:</p>
+                                  <p className="text-lg font-bold text-green-600">
+                                    ${getOrderTotal(order).toFixed(2)}
+                                  </p>
+                                </div>
+                              )}
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                               {order.items.map((item) => (
                                 <div
                                   key={item.id}
                                   className="border rounded-lg p-4 bg-white"
                                 >
-                                  {item.medicine.images[0] && (
+                                  {item.medicine.images?.[0] && (
                                     <img
                                       src={item.medicine.images[0]}
                                       alt={item.medicine.name}
-                                      className="w-full h-40 object-cover rounded mb-3"
+                                      className="w-full h-32 object-cover rounded mb-3"
                                     />
                                   )}
                                   <p className="font-medium text-gray-900">
@@ -405,8 +515,8 @@ export default function OrdersClient() {
       {pagination && pagination.totalPages > 1 && (
         <div className="flex items-center justify-between bg-white p-4 rounded-lg border">
           <div className="text-sm text-gray-600">
-            Page {pagination.page} of {pagination.totalPages} (
-            {pagination.total} total)
+            Page {pagination.page} of {pagination.totalPages} ({pagination.total}{" "}
+            total)
           </div>
           <div className="flex gap-2">
             <Button
