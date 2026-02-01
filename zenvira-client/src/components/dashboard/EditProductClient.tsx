@@ -11,6 +11,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 import { apiUrl } from "@/lib/api";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -37,7 +39,10 @@ interface Product {
 
 export default function EditProductClient({ id }: { id: string }) {
   const router = useRouter();
+  const { user } = useAuth();
   const { addToast } = useToast();
+  const isAdmin = user?.role === "admin";
+  const backPath = isAdmin ? "/dashboard/products" : "/dashboard/my-products";
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -175,7 +180,7 @@ export default function EditProductClient({ id }: { id: string }) {
 
       if (data.success) {
         addToast("Product updated successfully!", "success");
-        router.push("/dashboard/my-products");
+        router.push(backPath);
       } else {
         addToast(data.message || "Failed to update product", "error");
         setErrors({ submit: data.message || "Failed to update product" });
@@ -204,7 +209,7 @@ export default function EditProductClient({ id }: { id: string }) {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link href="/dashboard/my-products">
+        <Link href={backPath}>
           <Button variant="outline" size="sm" className="gap-2">
             <FaArrowLeft size={14} />
             Back
@@ -446,7 +451,7 @@ export default function EditProductClient({ id }: { id: string }) {
 
         {/* Action Buttons */}
         <div className="flex gap-4 justify-end">
-          <Link href="/dashboard/my-products">
+          <Link href={backPath}>
             <Button type="button" variant="outline" disabled={loading}>
               Cancel
             </Button>

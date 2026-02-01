@@ -27,6 +27,7 @@ export default function Navbar({ className }: { className?: string }) {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout, isLoading } = useAuth();
@@ -36,6 +37,19 @@ export default function Navbar({ className }: { className?: string }) {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      router.push(`/shops?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery("");
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -197,8 +211,8 @@ export default function Navbar({ className }: { className?: string }) {
             <Link href="/shops">
               <NavLink active={pathname.startsWith("/shops")}>Shop</NavLink>
             </Link>
-            <Link href="/pages">
-              <NavLink active={pathname.startsWith("/pages")}>Pages</NavLink>
+            <Link href="/about">
+              <NavLink active={pathname.startsWith("/about")}>About</NavLink>
             </Link>
             <Link href="/blog">
               <NavLink active={pathname.startsWith("/blog")}>Blog</NavLink>
@@ -212,6 +226,26 @@ export default function Navbar({ className }: { className?: string }) {
               </NavLink>
             </Link>
           </nav>
+
+          {/* Search Bar for Inner Pages */}
+          <div className="hidden items-center gap-2 md:flex">
+            <div className="relative">
+              <Input
+                placeholder="Search For Product"
+                className="pr-12"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+              />
+              <Button
+                size="icon"
+                onClick={handleSearch}
+                className="absolute right-0 top-0 h-full rounded-l-none bg-primary hover:bg-primary/90"
+              >
+                <FiSearch className="text-white" size={18} />
+              </Button>
+            </div>
+          </div>
 
           {/* Right Side Icons */}
           <div className="flex items-center gap-4">
@@ -377,6 +411,26 @@ export default function Navbar({ className }: { className?: string }) {
         {/* Mobile Menu - Inner Pages */}
         {mobileMenuOpen && (
           <div className="md:hidden border-t bg-white">
+            {/* Mobile Search */}
+            <div className="px-4 py-3 border-b">
+              <div className="relative w-full">
+                <Input
+                  placeholder="Search For Product"
+                  className="pr-12"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
+                />
+                <Button
+                  size="icon"
+                  onClick={handleSearch}
+                  className="absolute right-0 top-0 h-full rounded-l-none bg-primary hover:bg-primary/90"
+                >
+                  <FiSearch className="text-white" />
+                </Button>
+              </div>
+            </div>
+
             <nav className="flex flex-col px-4 py-2">
               <Link href="/" onClick={() => setMobileMenuOpen(false)}>
                 <MobileNavLink active={pathname === "/"}>Home</MobileNavLink>
@@ -386,9 +440,9 @@ export default function Navbar({ className }: { className?: string }) {
                   Shop
                 </MobileNavLink>
               </Link>
-              <Link href="/pages" onClick={() => setMobileMenuOpen(false)}>
-                <MobileNavLink active={pathname.startsWith("/pages")}>
-                  Pages
+              <Link href="/about" onClick={() => setMobileMenuOpen(false)}>
+                <MobileNavLink active={pathname.startsWith("/about")}>
+                  About
                 </MobileNavLink>
               </Link>
               <Link href="/blog" onClick={() => setMobileMenuOpen(false)}>
@@ -776,9 +830,16 @@ export default function Navbar({ className }: { className?: string }) {
         {/* Search */}
         <div className="hidden flex-1 items-center md:flex justify-end">
           <div className="relative w-full max-w-3xl">
-            <Input placeholder="Search For Product" className="pr-32" />
+            <Input
+              placeholder="Search For Product"
+              className="pr-32"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+            />
             <Button
               size="icon"
+              onClick={handleSearch}
               className="absolute right-0 top-0 h-full rounded-l-none bg-primary hover:bg-primary/90"
             >
               <FiSearch className="text-white" />
@@ -844,9 +905,16 @@ export default function Navbar({ className }: { className?: string }) {
           {/* Mobile Search */}
           <div className="px-4 py-3 border-b">
             <div className="relative w-full">
-              <Input placeholder="Search For Product" className="pr-12" />
+              <Input
+                placeholder="Search For Product"
+                className="pr-12"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+              />
               <Button
                 size="icon"
+                onClick={handleSearch}
                 className="absolute right-0 top-0 h-full rounded-l-none bg-primary hover:bg-primary/90"
               >
                 <FiSearch className="text-white" />

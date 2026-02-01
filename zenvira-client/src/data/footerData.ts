@@ -30,9 +30,9 @@ export const footerData = {
       { label: "About Us", href: "/about" },
       { label: "Shops", href: "/shops" },
       { label: "Our Doctors", href: "/doctors" },
-      { label: "Prescriptions", href: "/prescriptions" },
       { label: "Health Resources", href: "/resources" },
       { label: "Contact Us", href: "/contact" },
+      { label: "Become a Seller", href: "/become-seller" },
     ],
   },
 

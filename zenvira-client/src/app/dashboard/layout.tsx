@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/context/AuthContext";
 import {
   FiBox,
-  FiDollarSign,
+  FiFileText,
   FiHome,
   FiPackage,
   FiSettings,
@@ -43,9 +43,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       href: "/dashboard/users",
     },
     {
-      label: "Revenue",
-      icon: <FiDollarSign size={20} />,
-      href: "/dashboard/revenue",
+      label: "Seller Applications",
+      icon: <FiFileText size={20} />,
+      href: "/dashboard/seller-applications",
     },
     {
       label: "Settings",

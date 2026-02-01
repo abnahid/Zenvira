@@ -371,7 +371,7 @@ export default function ProductsClient() {
                                 <FiEye size={14} />
                               </Button>
                             </Link>
-                            <Link href={`/dashboard/my-products/edit/${product.id}`}>
+                            <Link href={`/dashboard/products/edit/${product.id}`}>
                               <Button size="sm" variant="outline">
                                 <FiEdit2 size={14} />
                               </Button>
