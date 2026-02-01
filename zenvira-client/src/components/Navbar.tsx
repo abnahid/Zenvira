@@ -881,8 +881,8 @@ export default function Navbar({ className }: { className?: string }) {
             <Link href="/shops">
               <NavLink active={pathname.startsWith("/shops")}>Shop</NavLink>
             </Link>
-            <Link href="/pages">
-              <NavLink active={pathname.startsWith("/pages")}>Pages</NavLink>
+            <Link href="/about">
+              <NavLink active={pathname.startsWith("/about")}>About</NavLink>
             </Link>
             <Link href="/blog">
               <NavLink active={pathname.startsWith("/blog")}>Blog</NavLink>

@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { apiUrl } from "@/lib/api";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FiFilter, FiGrid, FiList, FiSearch, FiX } from "react-icons/fi";
 import ShopCard from "./ShopCard";
@@ -21,6 +22,8 @@ type Category = {
 };
 
 const ShopClient = () => {
+  const searchParams = useSearchParams();
+
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(12);
   const [search, setSearch] = useState("");
@@ -39,6 +42,20 @@ const ShopClient = () => {
   // Categories state
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
+
+  // Read category and search query from URL on mount
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get("category");
+    const searchFromUrl = searchParams.get("q");
+
+    if (categoryFromUrl) {
+      setCategoryId(categoryFromUrl);
+    }
+
+    if (searchFromUrl) {
+      setSearch(decodeURIComponent(searchFromUrl));
+    }
+  }, [searchParams]);
 
   // Fetch categories
   useEffect(() => {
