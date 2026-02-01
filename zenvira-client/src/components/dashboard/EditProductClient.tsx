@@ -22,10 +22,24 @@ interface Category {
   name: string;
 }
 
-export default function CreateProductClient() {
+interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  stock: number;
+  description: string;
+  manufacturer: string;
+  status: string;
+  categoryId: string;
+  images: string[];
+}
+
+export default function EditProductClient({ id }: { id: string }) {
   const router = useRouter();
   const { addToast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
   const [images, setImages] = useState<string[]>([]);
   const [imageUrl, setImageUrl] = useState("");
@@ -44,6 +58,7 @@ export default function CreateProductClient() {
 
   useEffect(() => {
     fetchCategories();
+    fetchProduct();
   }, []);
 
   const fetchCategories = async () => {
@@ -60,20 +75,43 @@ export default function CreateProductClient() {
     }
   };
 
+  const fetchProduct = async () => {
+    try {
+      setInitialLoading(true);
+      const response = await fetch(apiUrl(`/api/medicines/id/${id}`), {
+        credentials: "include",
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        const product: Product = data.data;
+        setFormData({
+          name: product.name,
+          slug: product.slug,
+          price: product.price.toString(),
+          stock: product.stock.toString(),
+          description: product.description,
+          manufacturer: product.manufacturer,
+          categoryId: product.categoryId,
+          status: product.status,
+        });
+        setImages(product.images || []);
+      } else {
+        setErrors({ submit: "Failed to load product" });
+      }
+    } catch (error) {
+      console.error("Error fetching product:", error);
+      setErrors({ submit: "Failed to load product" });
+    } finally {
+      setInitialLoading(false);
+    }
+  };
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-
-    // Auto-generate slug from name
-    if (name === "name" && !formData.slug) {
-      const slug = value
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
-      setFormData((prev) => ({ ...prev, slug }));
-    }
 
     // Clear error when user types
     if (errors[name]) {
@@ -119,8 +157,8 @@ export default function CreateProductClient() {
     try {
       setLoading(true);
 
-      const response = await fetch(apiUrl("/api/medicines"), {
-        method: "POST",
+      const response = await fetch(apiUrl(`/api/medicines/${id}`), {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
@@ -136,20 +174,31 @@ export default function CreateProductClient() {
       const data = await response.json();
 
       if (data.success) {
-        addToast("Product created successfully!", "success");
+        addToast("Product updated successfully!", "success");
         router.push("/dashboard/my-products");
       } else {
-        addToast(data.message || "Failed to create product", "error");
-        setErrors({ submit: data.message || "Failed to create product" });
+        addToast(data.message || "Failed to update product", "error");
+        setErrors({ submit: data.message || "Failed to update product" });
       }
     } catch (error) {
-      console.error("Error creating product:", error);
-      addToast("Failed to create product", "error");
-      setErrors({ submit: "Failed to create product" });
+      console.error("Error updating product:", error);
+      addToast("Failed to update product", "error");
+      setErrors({ submit: "Failed to update product" });
     } finally {
       setLoading(false);
     }
   };
+
+  if (initialLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading product...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -162,11 +211,9 @@ export default function CreateProductClient() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Create New Product
-          </h1>
+          <h1 className="text-3xl font-bold tracking-tight">Edit Product</h1>
           <p className="text-gray-600 mt-1">
-            Add a new medicine product to your inventory
+            Update medicine product information
           </p>
         </div>
       </div>
@@ -408,12 +455,12 @@ export default function CreateProductClient() {
             {loading ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                Creating...
+                Updating...
               </>
             ) : (
               <>
                 <FaPlus size={14} />
-                Create Product
+                Update Product
               </>
             )}
           </Button>

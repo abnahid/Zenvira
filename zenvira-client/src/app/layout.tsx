@@ -1,6 +1,8 @@
 import LayoutWrapper from "@/components/LayoutWrapper";
+import ToastContainer from "@/components/ToastContainer";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
+import { ToastProvider } from "@/context/ToastContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
@@ -33,14 +35,17 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <CartProvider>
-            <WishlistProvider>
-              <LayoutWrapper />
-              {children}
-            </WishlistProvider>
-          </CartProvider>
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <CartProvider>
+              <WishlistProvider>
+                <LayoutWrapper />
+                {children}
+                <ToastContainer />
+              </WishlistProvider>
+            </CartProvider>
+          </AuthProvider>
+        </ToastProvider>
       </body>
     </html>
   );

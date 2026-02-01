@@ -69,12 +69,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     {
       label: "Orders",
       icon: <FiShoppingCart size={20} />,
-      href: "/dashboard/my-orders",
-    },
-    {
-      label: "Sales",
-      icon: <FiDollarSign size={20} />,
-      href: "/dashboard/sales",
+      href: "/dashboard/orders",
     },
     {
       label: "Settings",

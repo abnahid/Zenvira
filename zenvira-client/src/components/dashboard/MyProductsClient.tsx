@@ -11,10 +11,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/context/ToastContext";
 import { apiUrl } from "@/lib/api";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { FaEdit, FaPlus, FaTrash } from "react-icons/fa";
+import { FaEdit, FaEye, FaPlus, FaTrash } from "react-icons/fa";
 
 interface Product {
   id: string;
@@ -38,6 +39,7 @@ interface PaginationInfo {
 }
 
 export default function MyProductsClient() {
+  const { addToast } = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
@@ -96,8 +98,10 @@ export default function MyProductsClient() {
 
       setProducts(products.filter((p) => p.id !== deleteId));
       setDeleteId(null);
+      addToast("Product deleted successfully!", "success");
     } catch (error) {
       console.error("Error deleting product:", error);
+      addToast("Failed to delete product", "error");
     } finally {
       setIsDeleting(false);
     }
@@ -216,6 +220,12 @@ export default function MyProductsClient() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2">
+                        <Link href={`/shops/${product.slug}`}>
+                          <Button size="sm" variant="outline" className="gap-2">
+                            <FaEye size={16} />
+                            View
+                          </Button>
+                        </Link>
                         <Link
                           href={`/dashboard/my-products/${product.id}/edit`}
                         >
