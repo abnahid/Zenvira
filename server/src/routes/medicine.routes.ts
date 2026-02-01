@@ -8,6 +8,92 @@ import {
 
 const router = Router();
 
+// Get all medicines for admin (includes inactive)
+router.get(
+  "/admin",
+  requireAuth,
+  requireRole("admin"),
+  async (req: AuthRequest, res) => {
+    try {
+      // Pagination
+      const page = Math.max(1, parseInt(req.query.page as string) || 1);
+      const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 10));
+      const skip = (page - 1) * limit;
+
+      // Search
+      const search = (req.query.search as string) || "";
+
+      // Filters
+      const categoryId = req.query.categoryId as string;
+      const status = req.query.status as string;
+      const sellerId = req.query.sellerId as string;
+
+      // Build where clause (no status filter by default - show all)
+      const where: any = {};
+
+      if (status && ["active", "inactive"].includes(status)) {
+        where.status = status;
+      }
+
+      if (sellerId) {
+        where.sellerId = sellerId;
+      }
+
+      if (categoryId) {
+        where.categoryId = categoryId;
+      }
+
+      if (search) {
+        where.OR = [
+          { name: { contains: search, mode: "insensitive" } },
+          { description: { contains: search, mode: "insensitive" } },
+          { manufacturer: { contains: search, mode: "insensitive" } },
+        ];
+      }
+
+      const total = await prisma.medicine.count({ where });
+
+      const medicines = await prisma.medicine.findMany({
+        where,
+        include: {
+          category: true,
+          seller: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              email: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      });
+
+      const totalPages = Math.ceil(total / limit);
+
+      res.json({
+        success: true,
+        data: medicines,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1,
+        },
+      });
+    } catch (error) {
+      console.error("Get admin medicines error:", error);
+      res
+        .status(500)
+        .json({ success: false, message: "Failed to fetch medicines" });
+    }
+  }
+);
+
 router.get("/", async (req, res) => {
   try {
     // Pagination
