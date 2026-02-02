@@ -169,7 +169,7 @@ router.put(
   requireRole("admin"),
   async (req: AuthRequest, res) => {
     try {
-      const id = req.params.id;
+      const id = req.params.id as string;
       const { status } = req.body;
 
       if (!status || !["approved", "rejected"].includes(status)) {
@@ -317,7 +317,7 @@ router.get(
   requireRole("admin"),
   async (req: AuthRequest, res) => {
     try {
-      const id = req.params.id;
+      const id = req.params.id as string;
 
       const user = await prisma.user.findUnique({
         where: { id },
@@ -362,7 +362,7 @@ router.put(
   requireRole("admin"),
   async (req: AuthRequest, res) => {
     try {
-      const id = req.params.id;
+      const id = req.params.id as string;
       const { name, role, status, image } = req.body;
       const adminId = req.user?.id;
 
@@ -431,7 +431,7 @@ router.delete(
   requireRole("admin"),
   async (req: AuthRequest, res) => {
     try {
-      const id = req.params.id;
+      const id = req.params.id as string;
       const adminId = req.user?.id;
 
       // Prevent admin from deleting themselves
