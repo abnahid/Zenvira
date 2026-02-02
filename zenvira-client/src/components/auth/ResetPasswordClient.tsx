@@ -45,7 +45,7 @@ const ResetPasswordClient = () => {
           onSuccess: () => {
             setSuccess(true);
             setLoading(false);
-            setTimeout(() => router.push("/login"), 2000);
+            setTimeout(() => router.push("/auth/login"), 2000);
           },
           onError: (ctx) => {
             setError(ctx.error.message || "Failed to reset password");
@@ -79,7 +79,7 @@ const ResetPasswordClient = () => {
               This password reset link is invalid or has expired. Please request
               a new one.
             </p>
-            <Link href="/forgot-password">
+            <Link href="/auth/forgot-password">
               <Button className="w-full bg-primary hover:bg-primary/90 text-white">
                 Request New Link
               </Button>
@@ -107,7 +107,7 @@ const ResetPasswordClient = () => {
                 Your password has been reset successfully. Redirecting to
                 login...
               </p>
-              <Link href="/login">
+              <Link href="/auth/login">
                 <Button className="w-full bg-primary hover:bg-primary/90 text-white">
                   Go to Login
                 </Button>

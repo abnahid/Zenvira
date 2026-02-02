@@ -50,6 +50,7 @@ export default function OrderDetailsClient({ orderId }: { orderId: string }) {
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -140,6 +141,32 @@ export default function OrderDetailsClient({ orderId }: { orderId: string }) {
       style: "currency",
       currency: "USD",
     }).format(amount);
+  };
+
+  const handleCancelOrder = async () => {
+    if (!confirm("Are you sure you want to cancel this order?")) {
+      return;
+    }
+
+    try {
+      setIsCancelling(true);
+      const response = await fetch(apiUrl(`/api/orders/${orderId}/cancel`), {
+        method: "PUT",
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setOrder((prev) => (prev ? { ...prev, status: "cancelled" } : null));
+      } else {
+        setError(data.message || "Failed to cancel order");
+      }
+    } catch (err) {
+      setError("Failed to cancel order. Please try again.");
+    } finally {
+      setIsCancelling(false);
+    }
   };
 
   if (authLoading || !user) {
@@ -428,8 +455,13 @@ export default function OrderDetailsClient({ orderId }: { orderId: string }) {
           {order.status === "placed" && (
             <Card>
               <CardContent className="pt-6">
-                <Button variant="destructive" className="w-full">
-                  Cancel Order
+                <Button
+                  variant="destructive"
+                  className="w-full"
+                  onClick={handleCancelOrder}
+                  disabled={isCancelling}
+                >
+                  {isCancelling ? "Cancelling..." : "Cancel Order"}
                 </Button>
               </CardContent>
             </Card>

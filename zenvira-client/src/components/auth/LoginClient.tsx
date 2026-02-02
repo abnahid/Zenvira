@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FiEye, FiEyeOff, FiLoader } from "react-icons/fi";
+import { FcGoogle } from "react-icons/fc";
 
 const LoginClient = () => {
   const router = useRouter();
@@ -18,11 +19,27 @@ const LoginClient = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError(null);
+  };
+
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    setError(null);
+
+    try {
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/",
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Google login failed");
+      setGoogleLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -112,7 +129,7 @@ const LoginClient = () => {
 
           <div className="text-right">
             <Link
-              href="/forgot-password"
+              href="/auth/forgot-password"
               className="text-sm text-gray-600 hover:text-primary transition"
             >
               Forgot your password?
@@ -121,7 +138,7 @@ const LoginClient = () => {
 
           <Button
             type="submit"
-            disabled={loading}
+            disabled={loading || googleLoading}
             className="w-full py-3 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg transition flex items-center justify-center gap-2"
           >
             {loading ? (
@@ -133,6 +150,36 @@ const LoginClient = () => {
               "Sign In"
             )}
           </Button>
+
+          {/* Divider */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">Or continue with</span>
+            </div>
+          </div>
+
+          {/* Google Login Button */}
+          <Button
+            type="button"
+            onClick={handleGoogleLogin}
+            disabled={loading || googleLoading}
+            className="w-full py-3 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition flex items-center justify-center gap-3 border border-gray-300"
+          >
+            {googleLoading ? (
+              <>
+                <FiLoader className="animate-spin" size={16} />
+                Connecting...
+              </>
+            ) : (
+              <>
+                <FcGoogle size={20} />
+                Continue with Google
+              </>
+            )}
+          </Button>
         </form>
 
         {/* Register Link */}
@@ -140,7 +187,7 @@ const LoginClient = () => {
           <p className="text-gray-600 text-sm">
             Don't Have an Account?{" "}
             <Link
-              href="/register"
+              href="/auth/register"
               className="text-primary hover:text-primary/90 font-medium transition"
             >
               Create account

@@ -63,7 +63,7 @@ const ForgotPasswordClient = () => {
                 <span className="font-medium text-gray-700">{email}</span>.
                 Please check your inbox and follow the instructions.
               </p>
-              <Link href="/login">
+              <Link href="/auth/login">
                 <Button className="w-full bg-primary hover:bg-primary/90 text-white">
                   Back to Login
                 </Button>
@@ -125,7 +125,7 @@ const ForgotPasswordClient = () => {
               {/* Footer */}
               <div className="mt-6 text-center">
                 <Link
-                  href="/login"
+                  href="/auth/login"
                   className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-primary transition"
                 >
                   <FiArrowLeft size={16} />

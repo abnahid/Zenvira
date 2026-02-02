@@ -11,7 +11,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { apiUrl } from "@/lib/api";
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { FaBox } from "react-icons/fa";
 
 interface OrderItem {
@@ -307,8 +307,8 @@ export default function OrdersClient() {
               </thead>
               <tbody className="divide-y">
                 {orders.map((order) => (
-                  <>
-                    <tr key={order.id} className="hover:bg-gray-50 transition">
+                  <Fragment key={order.id}>
+                    <tr className="hover:bg-gray-50 transition">
                       <td className="px-6 py-4">
                         <p className="font-mono text-sm text-gray-900">
                           {order.id.substring(0, 8)}...
@@ -503,7 +503,7 @@ export default function OrdersClient() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 ))}
               </tbody>
             </table>

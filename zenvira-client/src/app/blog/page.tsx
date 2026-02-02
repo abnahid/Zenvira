@@ -232,7 +232,7 @@ export default function BlogPage() {
         </div>
 
         {/* Newsletter CTA */}
-        <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-lg p-8 text-center">
+        <div className="bg-linear-to-r from-emerald-50 to-emerald-100 rounded-lg p-8 text-center">
           <h2 className="text-2xl font-bold mb-3">
             Subscribe to Our Newsletter
           </h2>

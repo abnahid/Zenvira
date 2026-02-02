@@ -35,7 +35,7 @@ const VerifyEmailClient = () => {
           setError(error.message || "Failed to verify email");
         } else {
           setSuccess(true);
-          setTimeout(() => router.push("/login"), 3000);
+          setTimeout(() => router.push("/auth/login"), 3000);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong");
@@ -82,12 +82,12 @@ const VerifyEmailClient = () => {
             </h1>
             <p className="text-sm text-gray-500 mb-6">{error}</p>
             <div className="space-y-3">
-              <Link href="/login">
+              <Link href="/auth/login">
                 <Button className="w-full bg-primary hover:bg-primary/90 text-white">
                   Go to Login
                 </Button>
               </Link>
-              <Link href="/register">
+              <Link href="/auth/register">
                 <Button
                   variant="outline"
                   className="w-full border-gray-200 hover:bg-gray-50"
@@ -116,7 +116,7 @@ const VerifyEmailClient = () => {
           <p className="text-sm text-gray-500 mb-6">
             Your email has been verified successfully. Redirecting to login...
           </p>
-          <Link href="/login">
+          <Link href="/auth/login">
             <Button className="w-full bg-primary hover:bg-primary/90 text-white">
               Go to Login
             </Button>

@@ -55,6 +55,7 @@ export default function OrdersClient() {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -148,6 +149,36 @@ export default function OrdersClient() {
       style: "currency",
       currency: "USD",
     }).format(amount);
+  };
+
+  const handleCancelOrder = async (orderId: string) => {
+    if (!confirm("Are you sure you want to cancel this order?")) {
+      return;
+    }
+
+    try {
+      setCancellingOrderId(orderId);
+      const response = await fetch(apiUrl(`/api/orders/${orderId}/cancel`), {
+        method: "PUT",
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setOrders(
+          orders.map((order) =>
+            order.id === orderId ? { ...order, status: "cancelled" } : order,
+          ),
+        );
+      } else {
+        setError(data.message || "Failed to cancel order");
+      }
+    } catch (err) {
+      setError("Failed to cancel order. Please try again.");
+    } finally {
+      setCancellingOrderId(null);
+    }
   };
 
   if (authLoading || !user) {
@@ -380,8 +411,10 @@ export default function OrdersClient() {
                       variant="outline"
                       size="sm"
                       className="text-destructive"
+                      onClick={() => handleCancelOrder(order.id)}
+                      disabled={cancellingOrderId === order.id}
                     >
-                      Cancel Order
+                      {cancellingOrderId === order.id ? "Cancelling..." : "Cancel Order"}
                     </Button>
                   )}
                 </div>

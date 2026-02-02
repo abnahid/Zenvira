@@ -95,7 +95,7 @@ const CheckoutClient = () => {
       // Check if user is logged in (either from context or token)
       if (!token && !user) {
         alert("Please login to place an order");
-        router.push("/login");
+        router.push("/auth/login");
         setProcessing(false);
         return;
       }

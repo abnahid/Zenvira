@@ -354,7 +354,7 @@ export default function Navbar({ className }: { className?: string }) {
                     ) : (
                       <>
                         <Link
-                          href="/login"
+                          href="/auth/login"
                           onClick={() => setUserDropdownOpen(false)}
                           className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
                         >
@@ -362,7 +362,7 @@ export default function Navbar({ className }: { className?: string }) {
                           Login
                         </Link>
                         <Link
-                          href="/register"
+                          href="/auth/register"
                           onClick={() => setUserDropdownOpen(false)}
                           className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
                         >
@@ -519,7 +519,7 @@ export default function Navbar({ className }: { className?: string }) {
               ) : (
                 <>
                   <Link
-                    href="/login"
+                    href="/auth/login"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex flex-col items-center gap-1"
                   >
@@ -527,7 +527,7 @@ export default function Navbar({ className }: { className?: string }) {
                     <span className="text-xs">Login</span>
                   </Link>
                   <Link
-                    href="/register"
+                    href="/auth/register"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex flex-col items-center gap-1"
                   >
@@ -775,7 +775,7 @@ export default function Navbar({ className }: { className?: string }) {
                     ) : (
                       <>
                         <Link
-                          href="/login"
+                          href="/auth/login"
                           onClick={() => setUserDropdownOpen(false)}
                           className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
                         >
@@ -783,7 +783,7 @@ export default function Navbar({ className }: { className?: string }) {
                           Login
                         </Link>
                         <Link
-                          href="/register"
+                          href="/auth/register"
                           onClick={() => setUserDropdownOpen(false)}
                           className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
                         >
@@ -1045,7 +1045,7 @@ export default function Navbar({ className }: { className?: string }) {
             ) : (
               <>
                 <Link
-                  href="/login"
+                  href="/auth/login"
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex flex-col items-center gap-1"
                 >
@@ -1053,7 +1053,7 @@ export default function Navbar({ className }: { className?: string }) {
                   <span className="text-xs">Login</span>
                 </Link>
                 <Link
-                  href="/register"
+                  href="/auth/register"
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex flex-col items-center gap-1"
                 >

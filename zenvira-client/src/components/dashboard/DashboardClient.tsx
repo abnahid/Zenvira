@@ -16,8 +16,13 @@ export default function DashboardClient() {
   }, []);
 
   useEffect(() => {
-    if (!isLoading && !user) {
-      router.push("/auth/login");
+    if (!isLoading) {
+      if (!user) {
+        router.push("/auth/login");
+      } else if (user.role !== "admin" && user.role !== "seller") {
+        // Redirect non-admin/non-seller users
+        router.push("/");
+      }
     }
   }, [user, isLoading, router]);
 

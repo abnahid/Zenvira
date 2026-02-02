@@ -6,6 +6,7 @@ import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { FcGoogle } from "react-icons/fc";
 import { FiCheckCircle, FiEye, FiEyeOff, FiLoader } from "react-icons/fi";
 
 const RegisterClient = () => {
@@ -19,6 +20,7 @@ const RegisterClient = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
@@ -28,6 +30,21 @@ const RegisterClient = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError(null);
+  };
+
+  const handleGoogleSignUp = async () => {
+    setGoogleLoading(true);
+    setError(null);
+
+    try {
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/",
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Google sign up failed");
+      setGoogleLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,15 +73,15 @@ const RegisterClient = () => {
           email: formData.email,
           password: formData.password,
           image: defaultImage,
-          callbackURL: "/login?registered=true",
+          callbackURL: "/",
         },
         {
           onSuccess: () => {
             // Show success message
             setSuccess(true);
-            // Redirect to login page after 2 seconds
+            // Redirect to homepage after 2 seconds (user is now logged in)
             setTimeout(() => {
-              router.push("/login?registered=true");
+              router.push("/");
             }, 2000);
           },
           onError: (ctx) => {
@@ -198,7 +215,7 @@ const RegisterClient = () => {
 
             <Button
               type="submit"
-              disabled={loading || success}
+              disabled={loading || success || googleLoading}
               className="w-full py-3 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg transition flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {loading ? (
@@ -215,6 +232,38 @@ const RegisterClient = () => {
                 "Create Account"
               )}
             </Button>
+
+            {/* Divider */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+
+            {/* Google Sign Up Button */}
+            <Button
+              type="button"
+              onClick={handleGoogleSignUp}
+              disabled={loading || success || googleLoading}
+              className="w-full py-3 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition flex items-center justify-center gap-3 border border-gray-300 disabled:opacity-50"
+            >
+              {googleLoading ? (
+                <>
+                  <FiLoader className="animate-spin" size={16} />
+                  Connecting...
+                </>
+              ) : (
+                <>
+                  <FcGoogle size={20} />
+                  Continue with Google
+                </>
+              )}
+            </Button>
           </form>
 
           {/* Footer */}
@@ -222,7 +271,7 @@ const RegisterClient = () => {
             <p className="text-gray-600 text-sm">
               Already Have an Account?{" "}
               <Link
-                href="/login"
+                href="/auth/login"
                 className="text-primary hover:text-primary/90 font-medium transition"
               >
                 Sign In

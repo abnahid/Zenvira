@@ -106,7 +106,7 @@ const ShopDetailsClient = () => {
 
   const handleSubmitReview = async () => {
     if (!user) {
-      router.push("/login");
+      router.push("/auth/login");
       return;
     }
 
@@ -576,7 +576,9 @@ const ShopDetailsClient = () => {
                                 {review.user.name}
                               </h4>
                               <span className="text-sm text-gray-500">
-                                {new Date(review.createdAt).toLocaleDateString()}
+                                {new Date(
+                                  review.createdAt,
+                                ).toLocaleDateString()}
                               </span>
                             </div>
                             <div className="flex text-yellow-400 mb-2">
@@ -673,7 +675,7 @@ const ShopDetailsClient = () => {
                     <Button
                       onClick={() => {
                         if (!user) {
-                          router.push("/login");
+                          router.push("/auth/login");
                           return;
                         }
                         setShowReviewForm(true);

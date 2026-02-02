@@ -1,16 +1,19 @@
-import PageBanner from "@/components/PageBanner";
 import LoginClient from "@/components/auth/LoginClient";
+import PageBanner from "@/components/PageBanner";
 
-const page = () => {
+export const metadata = {
+  title: "Login | Zenvira",
+  description: "Login to your Zenvira account",
+};
+
+export default function LoginPage() {
   return (
-    <div>
+    <>
       <PageBanner
         title="Login"
         breadcrumbs={[{ label: "Home", href: "/" }, { label: "Login" }]}
       />
       <LoginClient />
-    </div>
+    </>
   );
-};
-
-export default page;
+}
