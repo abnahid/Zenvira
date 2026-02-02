@@ -4,21 +4,19 @@ import dotenv from "dotenv";
 import type { NextFunction, Request, Response } from "express";
 import express from "express";
 import { auth } from "./lib/auth.js";
-import categoryRoutes from "./routes/category.routes.js";
-import medicineRoutes from "./routes/medicine.routes.js";
-import orderRoutes from "./routes/order.routes.js";
-import reviewRoutes from "./routes/review.routes.js";
-import statsRoutes from "./routes/stats.routes.js";
-import userRoutes from "./routes/user.routes.js";
+import { categoryRoutes } from "./modules/category/index.js";
+import { medicineRoutes } from "./modules/medicine/index.js";
+import { orderRoutes } from "./modules/order/index.js";
+import { reviewRoutes } from "./modules/review/index.js";
+import { statsRoutes } from "./modules/stats/index.js";
+import { userRoutes } from "./modules/user/index.js";
 
-// Load environment variables in development
 if (process.env.NODE_ENV !== "production") {
   dotenv.config();
 }
 
 const app = express();
 
-// CORS configuration
 app.use(
   cors({
     origin: true,
@@ -38,7 +36,6 @@ app.use(express.json());
 
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
-// Root endpoint
 app.get("/", (_req: Request, res: Response) => {
   res.json({
     success: true,
@@ -59,16 +56,12 @@ app.use("/api/stats", statsRoutes);
 app.use("/api/user", userRoutes);
 
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-  console.error("Error:", err);
   res.status(500).json({ success: false, message: "Internal server error" });
 });
 
 if (process.env.VERCEL !== "1") {
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
+  app.listen(PORT);
 }
 
-// Export Express app for Vercel serverless function
 export default app;

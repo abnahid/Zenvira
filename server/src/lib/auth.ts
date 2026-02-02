@@ -11,22 +11,10 @@ if (process.env.SMTP_USER && process.env.SMTP_PASS) {
     service: "gmail",
     auth: {
       user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS, // Use App Password, not regular password
+      pass: process.env.SMTP_PASS,
     },
   });
 
-  // Verify connection
-  transporter.verify((error) => {
-    if (error) {
-      console.error("✗ SMTP connection failed:", error.message);
-    } else {
-      console.log("✓ Google SMTP email service initialized");
-    }
-  });
-} else {
-  console.warn(
-    "⚠ SMTP_USER or SMTP_PASS not set - email sending will not work. Add them to .env",
-  );
 }
 
 // Email sending function using Nodemailer
@@ -40,7 +28,6 @@ async function sendEmail({
   html: string;
 }) {
   if (!transporter) {
-    console.warn(`Email not sent to ${to}: SMTP not configured`);
     return;
   }
 
@@ -52,15 +39,11 @@ async function sendEmail({
       html,
     });
 
-    console.log(`✓ Email sent to ${to}:`, result.messageId);
     return result;
   } catch (error) {
-    console.error("Email error:", error);
-    // Don't throw, just log - email failures shouldn't break auth
+    // Email failures shouldn't break auth
   }
 }
-
-console.log("🔧 Initializing Better Auth...");
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -75,7 +58,7 @@ export const auth = betterAuth({
         type: "string",
         required: false,
         defaultValue: "customer",
-        input: false, // Don't allow setting via signup
+        input: false,
       },
       status: {
         type: "string",
@@ -83,6 +66,12 @@ export const auth = betterAuth({
         defaultValue: "active",
         input: false,
       },
+    },
+  },
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
   },
   emailAndPassword: {
@@ -99,9 +88,6 @@ export const auth = betterAuth({
       const token =
         urlObj.searchParams.get("token") || urlObj.pathname.split("/").pop();
       const frontendUrl = `${process.env.TRUSTED_ORIGIN || "http://localhost:3000"}/verify-email?token=${token}`;
-
-      console.log("Verification URL from better-auth:", url);
-      console.log("Frontend URL:", frontendUrl);
 
       void sendEmail({
         to: user.email,
@@ -228,9 +214,6 @@ export const auth = betterAuth({
         urlObj.searchParams.get("token") || urlObj.pathname.split("/").pop();
       const frontendUrl = `${process.env.TRUSTED_ORIGIN || "http://localhost:3000"}/reset-password?token=${token}`;
 
-      console.log("Reset password URL from better-auth:", url);
-      console.log("Frontend URL:", frontendUrl);
-
       void sendEmail({
         to: user.email,
         subject: "Reset your password",
@@ -348,11 +331,9 @@ export const auth = betterAuth({
         `,
       });
     },
-    onPasswordReset: async ({ user }: any, request: any) => {
-      console.log(`Password for user ${user.email} has been reset.`);
-    },
+    onPasswordReset: async ({ user }: any, request: any) => {},
   },
-  // Email verification settings
+
   emailVerification: {
     sendVerificationEmail: async ({ user, url }: any, request: any) => {
       // Extract token from URL - handle different URL formats
@@ -480,16 +461,14 @@ export const auth = betterAuth({
     },
   },
   callbacks: {
-    async onUserCreate({ user }) {
+    async onUserCreate({ user }: { user: { email: string; id: string } }) {
       try {
         await prisma.user.update({
           where: { email: user.email },
           data: { emailVerified: true },
         });
-
-        console.log(`✓ Auto-verified email for ${user.email}`);
       } catch (err) {
-        console.error("Auto-verify failed:", err);
+        // Auto-verify failed silently
       }
     },
   },
