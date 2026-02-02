@@ -11,7 +11,7 @@ import { FiEye, FiEyeOff, FiLoader } from "react-icons/fi";
 
 const LoginClient = () => {
   const router = useRouter();
-  const { fetchUser } = useAuth();
+  const { setUserFromData } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -42,10 +42,16 @@ const LoginClient = () => {
         return;
       }
 
-      // Fetch fresh user data from Better Auth session
-      await fetchUser();
+      if (!data || !data.user) {
+        setError("No user data received");
+        setLoading(false);
+        return;
+      }
 
-      // Redirect to home after user data is loaded
+      // Use the user data returned from login API directly
+      setUserFromData(data.user, data.token);
+
+      // Redirect to home after user data is set
       router.push("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");

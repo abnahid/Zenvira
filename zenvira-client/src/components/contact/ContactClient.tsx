@@ -52,21 +52,21 @@ export default function ContactClient() {
                 Feel free to contact <br /> us for any query.
               </h2>
 
-              <div className="mt-10 space-y-5">
+              <div className="mt-10 space-y-4">
                 {contactInfoData.map((info, index) => (
                   <div
                     key={index}
-                    className="flex items-center gap-4 bg-primary/10 rounded-full px-6 py-4"
+                    className="flex items-center gap-4 bg-primary rounded-full px-5 py-3"
                   >
-                    <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-primary text-lg">
+                    <div className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center text-white text-lg">
                       {info.icon}
                     </div>
 
                     <div>
-                      <h3 className="font-semibold text-primary text-sm">
+                      <h3 className="font-semibold text-white text-sm">
                         {info.title}
                       </h3>
-                      <p className="text-primary/90 text-xs">{info.detail}</p>
+                      <p className="text-white/80 text-xs">{info.detail}</p>
                     </div>
                   </div>
                 ))}

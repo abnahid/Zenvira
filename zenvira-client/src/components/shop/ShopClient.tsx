@@ -94,95 +94,121 @@ const ShopClient = () => {
 
   return (
     <div className="bg-white">
-      {/* Single Line Header - Results, Filters, Search, Controls */}
+      {/* Header - Results Title */}
       <div className="mx-auto max-w-7xl px-4 py-4 border-b">
-        <div className="flex items-center justify-between gap-4">
-          {/* Left: Results Count & Title */}
-          <div className="flex items-center gap-4">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">
-                Medical Equipment Products
-              </h1>
-              <p className="text-xs text-gray-600">
-                About {totalProducts.toLocaleString()} results
-              </p>
+        <h1 className="text-lg sm:text-xl font-bold text-gray-900">
+          Medical Equipment Products
+        </h1>
+        <p className="text-xs sm:text-sm text-gray-600">
+          About {totalProducts.toLocaleString()} results
+        </p>
+      </div>
+
+      {/* Search Bar - Mobile First */}
+      <div className="mx-auto max-w-7xl px-4 py-3 border-b lg:hidden">
+        <form onSubmit={handleSearch} className="flex gap-2">
+          <Input
+            placeholder="Search products..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="flex-1"
+          />
+          <Button
+            type="submit"
+            className="bg-primary hover:bg-primary/90 px-3 sm:px-4"
+          >
+            <FiSearch size={18} />
+          </Button>
+        </form>
+      </div>
+
+      {/* Controls - Mobile & Desktop */}
+      <div className="mx-auto max-w-7xl px-4 py-3 border-b">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          {/* Left: Filter & View Toggle */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2 px-3 py-2 border rounded-lg hover:bg-gray-50 transition text-sm"
+            >
+              <FiFilter size={18} />
+              <span className="hidden sm:inline">Filters</span>
+            </button>
+
+            {/* View Toggle */}
+            <div className="flex gap-2 border rounded-lg p-1">
+              <button
+                onClick={() => setViewType("grid")}
+                className={`p-2 rounded transition ${
+                  viewType === "grid"
+                    ? "bg-primary text-white"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+                title="Grid View"
+              >
+                <FiGrid size={18} />
+              </button>
+              <button
+                onClick={() => setViewType("list")}
+                className={`p-2 rounded transition ${
+                  viewType === "list"
+                    ? "bg-primary text-white"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+                title="List View"
+              >
+                <FiList size={18} />
+              </button>
             </div>
           </div>
 
-          {/* Sort By */}
-          <div className="flex items-center gap-2 whitespace-nowrap">
-            <span className="text-sm font-medium">Sort:</span>
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="createdAt">Best Match</SelectItem>
-                <SelectItem value="price">Price: Low High</SelectItem>
-                <SelectItem value="-price">Price: High Low</SelectItem>
-                <SelectItem value="name">Name A-Z</SelectItem>
-                <SelectItem value="stock">Stock</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* Middle: Sort & Per Page - Hidden on small mobile */}
+          <div className="hidden sm:flex gap-3 ml-auto flex-wrap">
+            {/* Sort By */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs sm:text-sm font-medium whitespace-nowrap">
+                Sort:
+              </span>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="createdAt">Best Match</SelectItem>
+                  <SelectItem value="price">Price: Low High</SelectItem>
+                  <SelectItem value="-price">Price: High Low</SelectItem>
+                  <SelectItem value="name">Name A-Z</SelectItem>
+                  <SelectItem value="stock">Stock</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Per Page */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs sm:text-sm font-medium whitespace-nowrap">
+                Per:
+              </span>
+              <Select
+                value={limit.toString()}
+                onValueChange={(v) => setLimit(parseInt(v))}
+              >
+                <SelectTrigger className="w-16">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="12">12</SelectItem>
+                  <SelectItem value="24">24</SelectItem>
+                  <SelectItem value="36">36</SelectItem>
+                  <SelectItem value="48">48</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          {/* Per Page */}
-          <div className="flex items-center gap-2 whitespace-nowrap">
-            <span className="text-sm font-medium">Per:</span>
-            <Select
-              value={limit.toString()}
-              onValueChange={(v) => setLimit(parseInt(v))}
-            >
-              <SelectTrigger className="w-16">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="12">12</SelectItem>
-                <SelectItem value="24">24</SelectItem>
-                <SelectItem value="36">36</SelectItem>
-                <SelectItem value="48">48</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* View Toggle */}
-          <div className="flex gap-2 border rounded-lg p-1">
-            <button
-              onClick={() => setViewType("grid")}
-              className={`p-2 rounded transition ${
-                viewType === "grid"
-                  ? "bg-primary text-white"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-              title="Grid View"
-            >
-              <FiGrid size={18} />
-            </button>
-            <button
-              onClick={() => setViewType("list")}
-              className={`p-2 rounded transition ${
-                viewType === "list"
-                  ? "bg-primary text-white"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-              title="List View"
-            >
-              <FiList size={18} />
-            </button>
-          </div>
-
-          {/* Center: Filters Button */}
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50 transition whitespace-nowrap"
-          >
-            <FiFilter size={18} />
-          </button>
-
-          {/* Right: Search */}
-          <form onSubmit={handleSearch} className="flex gap-2 w-64">
+          {/* Right: Search - Desktop Only */}
+          <form onSubmit={handleSearch} className="hidden lg:flex gap-2 w-64">
             <Input
-              placeholder="Search"
+              placeholder="Search..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="flex-1"
@@ -198,51 +224,54 @@ const ShopClient = () => {
       </div>
 
       <div className="mx-auto max-w-7xl px-4 py-6">
-        {/* Filter Panel */}
+        {/* Filter Panel - Mobile Optimized */}
         {showFilters && (
-          <div className="border rounded-lg p-6 bg-gray-50">
+          <div className="border rounded-lg p-4 sm:p-6 bg-gray-50 mb-6">
             <div className="flex justify-between items-center mb-4">
+              <h3 className="font-semibold text-gray-900">Filters</h3>
               <button
                 onClick={() => setShowFilters(false)}
-                className="p-1 hover:bg-gray-200 rounded"
+                className="p-1 hover:bg-gray-200 rounded lg:hidden"
               >
                 <FiX size={20} />
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {/* Price Range */}
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Min Price ($)
+                <label className="block text-xs sm:text-sm font-medium mb-2">
+                  Min Price
                 </label>
                 <Input
                   type="number"
                   placeholder="Min"
                   value={minPrice}
                   onChange={(e) => setMinPrice(e.target.value)}
+                  className="text-sm"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Max Price ($)
+                <label className="block text-xs sm:text-sm font-medium mb-2">
+                  Max Price
                 </label>
                 <Input
                   type="number"
                   placeholder="Max"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(e.target.value)}
+                  className="text-sm"
                 />
               </div>
 
               {/* Category */}
-              <div>
-                <label className="block text-sm font-medium mb-2">
+              <div className="col-span-2 sm:col-span-1">
+                <label className="block text-xs sm:text-sm font-medium mb-2">
                   Category
                 </label>
                 <Select value={categoryId} onValueChange={setCategoryId}>
-                  <SelectTrigger>
+                  <SelectTrigger className="text-sm">
                     <SelectValue placeholder="All Categories" />
                   </SelectTrigger>
                   <SelectContent>
@@ -257,32 +286,33 @@ const ShopClient = () => {
               </div>
 
               {/* Manufacturer */}
-              <div>
-                <label className="block text-sm font-medium mb-2">
+              <div className="col-span-2 sm:col-span-1">
+                <label className="block text-xs sm:text-sm font-medium mb-2">
                   Manufacturer
                 </label>
                 <Input
                   type="text"
-                  placeholder="Manufacturer name"
+                  placeholder="Brand name"
                   value={manufacturer}
                   onChange={(e) => setManufacturer(e.target.value)}
+                  className="text-sm"
                 />
               </div>
             </div>
 
-            <div className="flex gap-3 mt-4">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4">
               <Button
                 onClick={handleReset}
                 variant="outline"
-                className="flex-1"
+                className="flex-1 text-sm"
               >
-                Reset Filters
+                Reset
               </Button>
               <Button
                 onClick={() => setPage(1)}
-                className="flex-1 bg-primary hover:bg-primary/90"
+                className="flex-1 bg-primary hover:bg-primary/90 text-sm"
               >
-                Apply Filters
+                Apply
               </Button>
             </div>
           </div>

@@ -48,6 +48,18 @@ export const footerData = {
     ],
   },
 
+  legal: {
+    title: "Legal",
+    items: [
+      { label: "Terms & Conditions", href: "/terms" },
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Medical Disclaimer", href: "/disclaimer" },
+      { label: "Shipping & Delivery", href: "/shipping" },
+      { label: "Refund & Returns", href: "/refund" },
+      { label: "Tax Information", href: "/tax" },
+    ],
+  },
+
   socials: [
     { icon: FaFacebookF, href: "#" },
     { icon: FaTwitter, href: "#" },

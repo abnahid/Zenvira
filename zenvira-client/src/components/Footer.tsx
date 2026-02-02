@@ -50,13 +50,13 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Help */}
+        {/* Legal */}
         <div>
           <h3 className="text-white font-semibold mb-4">
-            {footerData.help.title}
+            {footerData.legal.title}
           </h3>
           <ul className="space-y-2 text-sm">
-            {footerData.help.items.map((link, i) => (
+            {footerData.legal.items.map((link, i) => (
               <li key={i}>
                 <a
                   href={link.href}
