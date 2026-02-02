@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/context/AuthContext";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -11,6 +12,7 @@ import { FiCheckCircle, FiEye, FiEyeOff, FiLoader } from "react-icons/fi";
 
 const RegisterClient = () => {
   const router = useRouter();
+  const { setUserFromData } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -37,9 +39,11 @@ const RegisterClient = () => {
     setError(null);
 
     try {
+      // Use full URL for callback to ensure redirect to client, not server
+      const callbackURL = `${window.location.origin}/`;
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Google sign up failed");
@@ -76,10 +80,16 @@ const RegisterClient = () => {
           callbackURL: "/",
         },
         {
-          onSuccess: () => {
+          onSuccess: (ctx) => {
             // Show success message
             setSuccess(true);
-            // Redirect to homepage after 2 seconds (user is now logged in)
+
+            // Set user in context if data is returned
+            if (ctx.data?.user) {
+              setUserFromData(ctx.data.user, ctx.data.token);
+            }
+
+            // Redirect to homepage after 2 seconds
             setTimeout(() => {
               router.push("/");
             }, 2000);
@@ -93,6 +103,11 @@ const RegisterClient = () => {
 
       if (error) {
         throw new Error(error.message || "Registration failed");
+      }
+
+      // Also set user from response data if available
+      if (data?.user) {
+        setUserFromData(data.user, data.token ?? undefined);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -112,7 +127,7 @@ const RegisterClient = () => {
               Account created successfully.
             </p>
             <p className="text-xs text-green-600 mt-1">
-              Redirecting to login...
+              Redirecting to homepage...
             </p>
           </div>
         </div>

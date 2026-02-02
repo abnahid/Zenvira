@@ -32,9 +32,11 @@ const LoginClient = () => {
     setError(null);
 
     try {
+      // Use full URL for callback to ensure redirect to client, not server
+      const callbackURL = `${window.location.origin}/`;
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Google login failed");

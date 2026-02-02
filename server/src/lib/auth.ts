@@ -14,7 +14,6 @@ if (process.env.SMTP_USER && process.env.SMTP_PASS) {
       pass: process.env.SMTP_PASS,
     },
   });
-
 }
 
 // Email sending function using Nodemailer
@@ -51,7 +50,10 @@ export const auth = betterAuth({
   }),
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:5000",
   secret: process.env.BETTER_AUTH_SECRET,
-  trustedOrigins: [process.env.TRUSTED_ORIGIN || "http://localhost:3000"],
+  trustedOrigins: [
+    process.env.TRUSTED_ORIGIN || "http://localhost:3000",
+    "https://zenvira-dev.vercel.app",
+  ],
   user: {
     additionalFields: {
       role: {
