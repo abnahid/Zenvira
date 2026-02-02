@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/abnahid/Zenvira/main/docs/assets/zenvira-logo.png" alt="Zenvira Logo" width="200"/>
+  <img src="https://i.ibb.co.com/XrChwBtH/logo-zenvin.jpg" alt="Zenvira Logo" width="200"/>
 </p>
 
 <h1 align="center">Zenvira</h1>
