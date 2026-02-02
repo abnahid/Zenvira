@@ -11,6 +11,7 @@ router.get("/:id", requireAuth, orderController.getById);
 router.post("/", requireAuth, orderController.create);
 router.put("/:id/status", requireAuth, requireRole("admin", "seller"), orderController.updateStatus);
 router.put("/:id/payment", requireAuth, requireRole("admin"), orderController.updatePaymentStatus);
+router.put("/:id/cancel", requireAuth, orderController.cancelOrder);
 router.delete("/:id", requireAuth, orderController.delete);
 
 export default router;

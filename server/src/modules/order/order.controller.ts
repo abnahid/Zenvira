@@ -219,6 +219,36 @@ export const orderController = {
     }
   },
 
+  async cancelOrder(req: AuthRequest, res: Response) {
+    try {
+      const id = String(req.params.id);
+      const userId = req.user?.id;
+      const isAdmin = req.user?.role === "admin";
+
+      const order = await orderService.getById(id);
+
+      if (!order) {
+        return res.status(404).json({ success: false, message: "Order not found" });
+      }
+
+      if (!isAdmin && order.customerId !== userId) {
+        return res.status(403).json({ success: false, message: "Access denied" });
+      }
+
+      if (!isAdmin && order.status !== "placed") {
+        return res.status(400).json({
+          success: false,
+          message: "Can only cancel orders with 'placed' status",
+        });
+      }
+
+      const updatedOrder = await orderService.updateStatus(id, "cancelled");
+      res.json({ success: true, data: updatedOrder, message: "Order cancelled successfully" });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Failed to cancel order" });
+    }
+  },
+
   async delete(req: AuthRequest, res: Response) {
     try {
       const id = String(req.params.id);

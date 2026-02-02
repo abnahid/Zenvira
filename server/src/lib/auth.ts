@@ -473,7 +473,16 @@ export const auth = betterAuth({
     },
   },
   advanced: {
-    useSecureCookies: false,
+    useSecureCookies: process.env.NODE_ENV === "production",
     disableCSRFCheck: true,
+    crossSubDomainCookies: {
+      enabled: true,
+    },
+    defaultCookieAttributes: {
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+      path: "/",
+    },
   },
 });

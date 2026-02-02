@@ -29,6 +29,16 @@ export const medicineController = {
       const page = Math.max(1, parseInt(req.query.page as string) || 1);
       const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 12));
 
+      let sortByParam = (req.query.sortBy as string) || "createdAt";
+      let sortOrder: "asc" | "desc" = "desc";
+
+      if (sortByParam.startsWith("-")) {
+        sortByParam = sortByParam.substring(1);
+        sortOrder = "desc";
+      } else if (sortByParam === "price" || sortByParam === "name") {
+        sortOrder = "asc";
+      }
+
       const result = await medicineService.getAll({
         page,
         limit,
@@ -37,8 +47,8 @@ export const medicineController = {
         minPrice: parseFloat(req.query.minPrice as string),
         maxPrice: parseFloat(req.query.maxPrice as string),
         manufacturer: req.query.manufacturer as string,
-        sortBy: req.query.sortBy as string,
-        sortOrder: (req.query.sortOrder as string) === "asc" ? "asc" : "desc",
+        sortBy: sortByParam,
+        sortOrder,
         activeOnly: true,
       });
 
