@@ -25,7 +25,7 @@ const RegisterClient = () => {
   const [success, setSuccess] = useState(false);
 
   // Default avatar image - hidden from user
-  const defaultImage = "https://avatar.iran.liara.run/public/7";
+  const defaultImage = "https://i.ibb.co.com/7tsGL68c/blob.webp";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

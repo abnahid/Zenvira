@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function PromoGrid() {
   return (
@@ -18,9 +19,12 @@ export default function PromoGrid() {
             </h2>
             <p className="text-sm text-gray-600 mb-4">Starting at $1.99</p>
 
-            <button className="bg-primary text-white px-4 sm:px-5 py-2 rounded-md text-sm hover:bg-primary/90 transition">
+            <Link
+              href="https://zenvira-dev.vercel.app/shops/evion-400-capsules"
+              className="inline-block bg-primary text-white px-6 py-2 rounded-md text-sm hover:bg-primary/90 transition"
+            >
               Shop Now →
-            </button>
+            </Link>
           </div>
 
           <div className="absolute right-2 sm:right-6 bottom-2 sm:bottom-6 rounded-lg flex items-center justify-center text-xs text-gray-500">
@@ -46,9 +50,12 @@ export default function PromoGrid() {
               </h3>
               <p className="text-sm text-gray-600 mb-4">Starting at $16.99</p>
 
-              <button className="bg-primary text-white px-4 py-2 rounded-md text-sm hover:bg-primary/90 transition">
+              <Link
+                href="/shops"
+                className="bg-primary text-white px-4 py-2 rounded-md text-sm hover:bg-primary/90 transition"
+              >
                 Shop Now →
-              </button>
+              </Link>
             </div>
 
             <div className="absolute right-2 sm:right-4 bottom-2 sm:bottom-4 rounded-md flex items-center justify-center text-[10px] text-gray-500">
@@ -77,9 +84,12 @@ export default function PromoGrid() {
               </h3>
               <p className="text-sm text-gray-600 mb-4">$199.00</p>
 
-              <button className="bg-primary text-white px-4 py-2 rounded-md text-sm hover:bg-primary/90 transition">
+              <Link
+                href="/shops"
+                className="bg-primary text-white px-4 py-2 rounded-md text-sm hover:bg-primary/90 transition"
+              >
                 Shop Now →
-              </button>
+              </Link>
             </div>
 
             <div className="absolute right-2 sm:right-4 bottom-2 sm:bottom-4 rounded-md flex items-center justify-center text-[10px] text-gray-500">

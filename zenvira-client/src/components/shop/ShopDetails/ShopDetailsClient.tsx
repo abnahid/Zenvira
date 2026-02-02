@@ -4,12 +4,13 @@ import PageBanner from "@/components/PageBanner";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { apiUrl } from "@/lib/api";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FaHeart, FaShareAlt } from "react-icons/fa";
-import { FiMinus, FiPlus, FiShoppingCart, FiX } from "react-icons/fi";
+import { FaHeart, FaRegHeart, FaShareAlt } from "react-icons/fa";
+import { FiCheck, FiMinus, FiPlus, FiShoppingCart, FiX } from "react-icons/fi";
 
 type Review = {
   id: string;
@@ -56,6 +57,7 @@ const ShopDetailsClient = () => {
   const slug = params.slug as string;
   const { addToCart } = useCart();
   const { user } = useAuth();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,6 +67,8 @@ const ShopDetailsClient = () => {
   const [activeTab, setActiveTab] = useState("description");
   const [addingToCart, setAddingToCart] = useState(false);
   const [showCartSuccess, setShowCartSuccess] = useState(false);
+  const [showWishlistToast, setShowWishlistToast] = useState<"added" | "removed" | null>(null);
+  const [showShareToast, setShowShareToast] = useState(false);
 
   // Review form state
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -230,6 +234,68 @@ const ShopDetailsClient = () => {
     }
   };
 
+  const handleWishlistToggle = () => {
+    if (!product) return;
+
+    const inWishlist = isInWishlist(product.id);
+
+    if (inWishlist) {
+      removeFromWishlist(product.id);
+      setShowWishlistToast("removed");
+    } else {
+      addToWishlist({
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        price: product.price,
+        image: product.images[0] || "/placeholder.png",
+        stock: product.stock,
+        category: product.category.name,
+      });
+      setShowWishlistToast("added");
+    }
+
+    // Hide toast after 3 seconds
+    setTimeout(() => {
+      setShowWishlistToast(null);
+    }, 3000);
+  };
+
+  const handleShare = async () => {
+    if (!product) return;
+
+    const shareData = {
+      title: product.name,
+      text: `Check out ${product.name} on Zenvira!`,
+      url: window.location.href,
+    };
+
+    try {
+      // Try native share API first (mobile devices)
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(window.location.href);
+        setShowShareToast(true);
+        setTimeout(() => {
+          setShowShareToast(false);
+        }, 3000);
+      }
+    } catch (error) {
+      // User cancelled or error - try clipboard fallback
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        setShowShareToast(true);
+        setTimeout(() => {
+          setShowShareToast(false);
+        }, 3000);
+      } catch {
+        console.error("Failed to share or copy link");
+      }
+    }
+  };
+
   return (
     <div className="bg-white">
       <PageBanner
@@ -379,14 +445,24 @@ const ShopDetailsClient = () => {
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                className="flex-1 flex items-center justify-center gap-2"
+                onClick={handleWishlistToggle}
+                className={`flex-1 flex items-center justify-center gap-2 transition-colors ${
+                  isInWishlist(product.id)
+                    ? "bg-red-50 border-red-300 text-red-600 hover:bg-red-100"
+                    : "hover:bg-gray-50"
+                }`}
               >
-                <FaHeart size={18} />
-                Wishlist
+                {isInWishlist(product.id) ? (
+                  <FaHeart size={18} className="text-red-500" />
+                ) : (
+                  <FaRegHeart size={18} />
+                )}
+                {isInWishlist(product.id) ? "In Wishlist" : "Add to Wishlist"}
               </Button>
               <Button
                 variant="outline"
-                className="flex-1 flex items-center justify-center gap-2"
+                onClick={handleShare}
+                className="flex-1 flex items-center justify-center gap-2 hover:bg-gray-50"
               >
                 <FaShareAlt size={18} />
                 Share
@@ -723,6 +799,60 @@ const ShopDetailsClient = () => {
             >
               View Cart
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Wishlist Toast Notification */}
+      {showWishlistToast && (
+        <div className="fixed top-24 right-4 z-50 animate-in slide-in-from-right">
+          <div
+            className={`${
+              showWishlistToast === "added"
+                ? "bg-red-500"
+                : "bg-gray-600"
+            } text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3`}
+          >
+            <div className="shrink-0">
+              {showWishlistToast === "added" ? (
+                <FaHeart className="w-5 h-5" />
+              ) : (
+                <FiCheck className="w-5 h-5" />
+              )}
+            </div>
+            <div>
+              <p className="font-semibold">
+                {showWishlistToast === "added"
+                  ? "Added to Wishlist!"
+                  : "Removed from Wishlist"}
+              </p>
+              <p className="text-sm opacity-90">{product.name}</p>
+            </div>
+            {showWishlistToast === "added" && (
+              <button
+                onClick={() => router.push("/profile")}
+                className="ml-4 bg-white text-red-600 px-4 py-2 rounded font-medium text-sm hover:bg-red-50 transition"
+              >
+                View Wishlist
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Share Toast Notification */}
+      {showShareToast && (
+        <div className="fixed top-24 right-4 z-50 animate-in slide-in-from-right">
+          <div className="bg-blue-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3">
+            <div className="shrink-0">
+              <FiCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="font-semibold">Link Copied!</p>
+              <p className="text-sm text-blue-100">
+                Product link copied to clipboard
+              </p>
+            </div>
           </div>
         </div>
       )}

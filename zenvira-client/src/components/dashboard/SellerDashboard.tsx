@@ -185,7 +185,7 @@ export default function SellerDashboard() {
           </h3>
           <div className="space-y-3">
             <Link
-              href="/dashboard/create-product"
+              href="/dashboard/my-products/create"
               className="block px-4 py-3 border border-primary/30 rounded-lg text-primary hover:bg-primary/10 transition font-medium text-sm"
             >
               Add New Product
@@ -197,7 +197,7 @@ export default function SellerDashboard() {
               Manage Inventory
             </Link>
             <Link
-              href="/dashboard/seller-profile"
+              href="/dashboard/settings"
               className="block px-4 py-3 border border-primary/30 rounded-lg text-primary hover:bg-primary/10 transition font-medium text-sm"
             >
               Edit Profile
