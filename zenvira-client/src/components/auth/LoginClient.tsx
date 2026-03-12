@@ -5,13 +5,15 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { FiEye, FiEyeOff, FiLoader } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
+import { FiEye, FiEyeOff, FiLoader } from "react-icons/fi";
 
 const LoginClient = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
   const { setUserFromData } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
@@ -32,12 +34,15 @@ const LoginClient = () => {
     setError(null);
 
     try {
-      // Use full URL for callback to ensure redirect to client, not server
-      const callbackURL = `${window.location.origin}/`;
-      await authClient.signIn.social({
+      const { error } = await authClient.signIn.social({
         provider: "google",
-        callbackURL,
+        callbackURL: callbackUrl,
       });
+
+      if (error) {
+        setError(error.message || "Google login failed");
+        setGoogleLoading(false);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Google login failed");
       setGoogleLoading(false);
@@ -70,8 +75,8 @@ const LoginClient = () => {
       // Use the user data returned from login API directly
       setUserFromData(data.user, data.token);
 
-      // Redirect to home after user data is set
-      router.push("/");
+      // Redirect to callback URL or home
+      router.push(callbackUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
       setLoading(false);
@@ -159,7 +164,9 @@ const LoginClient = () => {
               <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              <span className="px-2 bg-white text-gray-500">
+                Or continue with
+              </span>
             </div>
           </div>
 

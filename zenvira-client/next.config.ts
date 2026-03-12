@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+      },
+      {
+        protocol: "https",
         hostname: "avatars.githubusercontent.com",
       },
       {
@@ -22,6 +26,21 @@ const nextConfig: NextConfig = {
         hostname: "i.ibb.co.com",
       },
     ],
+  },
+  // Proxy API requests to backend to make cookies first-party
+  async rewrites() {
+    const backendUrl =
+      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+    return [
+      {
+        source: "/api/auth/:path*",
+        destination: `${backendUrl}/api/auth/:path*`,
+      },
+      {
+        source: "/api/:path*",
+        destination: `${backendUrl}/api/:path*`,
+      },
+    ];
   },
 };
 

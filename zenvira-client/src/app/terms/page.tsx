@@ -1,4 +1,5 @@
 import PageBanner from "@/components/PageBanner";
+import Link from "next/link";
 
 export const metadata = {
   title: "Terms & Conditions | Zenvira",
@@ -88,12 +89,12 @@ export default function TermsPage() {
             </p>
             <p className="text-sm text-gray-600 mt-2">
               If you have questions about these terms, please contact us at{" "}
-              <a
+              <Link
                 href="mailto:legal@zenvira.com"
                 className="text-emerald-600 hover:underline"
               >
                 legal@zenvira.com
-              </a>
+              </Link>
             </p>
           </div>
         </div>

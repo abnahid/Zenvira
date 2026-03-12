@@ -1,5 +1,7 @@
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://zenvira-server.vercel.app";
+  typeof window !== "undefined"
+    ? ""
+    : (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000");
 
 export const apiUrl = (path: string) => {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;

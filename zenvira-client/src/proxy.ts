@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // Routes that require authentication
 const protectedRoutes = ["/dashboard", "/profile", "/orders", "/checkout"];
@@ -25,20 +25,29 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Get the session token from cookies (Better Auth uses this cookie name)
+  // In production with secure: true, cookies are prefixed with __Secure-
   const sessionToken =
     request.cookies.get("better-auth.session_token")?.value ||
-    request.cookies.get("better-auth.session")?.value;
+    request.cookies.get("__Secure-better-auth.session_token")?.value ||
+    request.cookies.get("better-auth.session")?.value ||
+    request.cookies.get("__Secure-better-auth.session")?.value;
 
   // Check if user is authenticated
   const isAuthenticated = !!sessionToken;
 
   // Redirect authenticated users away from auth pages
-  if (isAuthenticated && authRoutes.some((route) => pathname.startsWith(route))) {
+  if (
+    isAuthenticated &&
+    authRoutes.some((route) => pathname.startsWith(route))
+  ) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
   // Redirect unauthenticated users to login for protected routes
-  if (!isAuthenticated && protectedRoutes.some((route) => pathname.startsWith(route))) {
+  if (
+    !isAuthenticated &&
+    protectedRoutes.some((route) => pathname.startsWith(route))
+  ) {
     const loginUrl = new URL("/auth/login", request.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);

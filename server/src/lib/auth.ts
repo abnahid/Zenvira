@@ -1,58 +1,22 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import nodemailer from "nodemailer";
+import { sendEmail } from "./email.js";
 import { prisma } from "./prisma.js";
-
-// Initialize Nodemailer transporter with Google SMTP
-let transporter: nodemailer.Transporter | null = null;
-
-if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-  transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-}
-
-// Email sending function using Nodemailer
-async function sendEmail({
-  to,
-  subject,
-  html,
-}: {
-  to: string;
-  subject: string;
-  html: string;
-}) {
-  if (!transporter) {
-    return;
-  }
-
-  try {
-    const result = await transporter.sendMail({
-      from: process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER,
-      to,
-      subject,
-      html,
-    });
-
-    return result;
-  } catch (error) {
-    // Email failures shouldn't break auth
-  }
-}
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
-  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:5000",
+  baseURL:
+    process.env.TRUSTED_ORIGIN ||
+    process.env.BETTER_AUTH_URL ||
+    "http://localhost:3000",
   secret: process.env.BETTER_AUTH_SECRET,
   trustedOrigins: [
     process.env.TRUSTED_ORIGIN || "http://localhost:3000",
     "https://zenvira-dev.vercel.app",
+    "https://zenvira.vercel.app",
+    "http://localhost:3000",
   ],
   user: {
     additionalFields: {
@@ -74,6 +38,8 @@ export const auth = betterAuth({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      redirectURI: `${process.env.TRUSTED_ORIGIN || "http://localhost:3000"}/api/auth/callback/google`,
+      prompt: "select_account",
     },
   },
   emailAndPassword: {
@@ -190,11 +156,6 @@ export const auth = betterAuth({
               info@abnahid.com
             </a><br>
 
-            If you no longer wish to receive emails from Zenvira, you can
-            <a href="{{UNSUBSCRIBE_LINK}}" style="color:#4f46e5; text-decoration:none;">
-              unsubscribe
-            </a>.<br><br>
-
             500 Medical Park Drive, Sylhet<br>
             © 2025 Zenvira
           </div>
@@ -225,6 +186,16 @@ export const auth = betterAuth({
     defaultCookieAttributes: {
       sameSite: "none",
       secure: true,
+      path: "/",
+      httpOnly: true,
     },
+    crossSubDomainCookies: {
+      enabled: true,
+    },
+  },
+  sessionConfig: {
+    absoluteTimeout: 30 * 24 * 60 * 60, // 30 days
+    updateAgeSession: 24 * 60 * 60, // Update every 24 hours
+    inactiveTimeout: 7 * 24 * 60 * 60, // 7 days
   },
 });

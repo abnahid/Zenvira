@@ -1,4 +1,5 @@
 import PageBanner from "@/components/PageBanner";
+import Link from "next/link";
 
 export const metadata = {
   title: "Refund & Returns Policy | Zenvira",
@@ -184,12 +185,12 @@ export default function RefundPage() {
           <ul className="list-disc list-inside text-gray-600 mb-6 space-y-2">
             <li>
               Email:{" "}
-              <a
+              <Link
                 href="mailto:returns@zenvira.com"
                 className="text-emerald-600 hover:underline"
               >
                 returns@zenvira.com
-              </a>
+              </Link>
             </li>
             <li>Phone: +1-800-ZENVIRA</li>
             <li>Chat: Available 24/7 on our website</li>

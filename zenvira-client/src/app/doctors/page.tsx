@@ -1,5 +1,6 @@
 import PageBanner from "@/components/PageBanner";
 import Image from "next/image";
+import Link from "next/link";
 import { FiFacebook, FiInstagram, FiLinkedin, FiTwitter } from "react-icons/fi";
 
 export const metadata = {
@@ -166,12 +167,12 @@ export default function DoctorsPage() {
             Our doctors are here to provide guidance on medication and health
             concerns.
           </p>
-          <a
+          <Link
             href="/contact"
             className="inline-block bg-emerald-500 text-white px-8 py-3 rounded-lg hover:bg-emerald-600 transition"
           >
             Contact Our Team
-          </a>
+          </Link>
         </div>
       </div>
     </>

@@ -107,12 +107,12 @@ const ProfileClient = () => {
           <p className="text-gray-600 text-lg mb-4">
             Please login to view your profile
           </p>
-          <a
+          <Link
             href="/auth/login"
             className="inline-block px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition"
           >
             Go to Login
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -399,12 +399,12 @@ const ProfileClient = () => {
                   Click the button below to view your complete order history,
                   track shipments, and manage your orders.
                 </p>
-                <a
+                <Link
                   href="/orders"
                   className="inline-block px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition text-sm font-medium"
                 >
                   Go to Orders
-                </a>
+                </Link>
               </div>
             )}
 
@@ -422,12 +422,12 @@ const ProfileClient = () => {
                     <p className="text-sm text-gray-500 mt-2">
                       Add products to your wishlist to save them for later
                     </p>
-                    <a
+                    <Link
                       href="/shops"
                       className="inline-block mt-6 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition text-sm font-medium"
                     >
                       Browse Products
-                    </a>
+                    </Link>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

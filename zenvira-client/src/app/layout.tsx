@@ -1,4 +1,5 @@
 import LayoutWrapper from "@/components/LayoutWrapper";
+import MedicineChecker from "@/components/MedicineChecker";
 import ToastContainer from "@/components/ToastContainer";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
@@ -40,6 +41,7 @@ export default function RootLayout({
             <CartProvider>
               <WishlistProvider>
                 <LayoutWrapper>{children}</LayoutWrapper>
+                <MedicineChecker />
                 <ToastContainer />
               </WishlistProvider>
             </CartProvider>

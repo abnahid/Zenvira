@@ -1,4 +1,5 @@
 import PageBanner from "@/components/PageBanner";
+import Link from "next/link";
 
 export const metadata = {
   title: "Privacy Policy | Zenvira",
@@ -112,12 +113,12 @@ export default function PrivacyPage() {
             </p>
             <p className="text-sm text-gray-600 mt-2">
               For privacy-related inquiries, contact us at{" "}
-              <a
+              <Link
                 href="mailto:privacy@zenvira.com"
                 className="text-emerald-600 hover:underline"
               >
                 privacy@zenvira.com
-              </a>
+              </Link>
             </p>
           </div>
         </div>

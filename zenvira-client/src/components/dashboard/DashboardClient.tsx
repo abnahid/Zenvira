@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import AdminDashboard from "./AdminDashboard";
@@ -53,12 +54,12 @@ export default function DashboardClient() {
         <p className="text-gray-600 text-lg mb-4">
           Your role is not authorized to access dashboard
         </p>
-        <a
+        <Link
           href="/"
           className="inline-block px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition"
         >
           Go to Home
-        </a>
+        </Link>
       </div>
     </div>
   );

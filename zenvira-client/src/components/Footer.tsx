@@ -1,5 +1,6 @@
 import { footerData } from "@/data/footerData";
 import Image from "next/image";
+import Link from "next/link";
 import { FiMapPin } from "react-icons/fi";
 
 export default function Footer() {
@@ -19,13 +20,13 @@ export default function Footer() {
             {footerData.socials.map((item, i) => {
               const Icon = item.icon;
               return (
-                <a
+                <Link
                   key={i}
                   href={item.href}
                   className="w-9 h-9 flex items-center justify-center rounded-full bg-white text-black hover:bg-emerald-500 hover:text-white transition"
                 >
                   <Icon size={14} />
-                </a>
+                </Link>
               );
             })}
           </div>
@@ -39,12 +40,12 @@ export default function Footer() {
           <ul className="space-y-2 text-sm">
             {footerData.links.items.map((link, i) => (
               <li key={i}>
-                <a
+                <Link
                   href={link.href}
                   className="hover:text-emerald-500 transition"
                 >
                   {link.label}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
@@ -58,12 +59,12 @@ export default function Footer() {
           <ul className="space-y-2 text-sm">
             {footerData.legal.items.map((link, i) => (
               <li key={i}>
-                <a
+                <Link
                   href={link.href}
                   className="hover:text-emerald-500 transition"
                 >
                   {link.label}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>

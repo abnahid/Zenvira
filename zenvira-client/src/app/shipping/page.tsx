@@ -1,4 +1,5 @@
 import PageBanner from "@/components/PageBanner";
+import Link from "next/link";
 
 export const metadata = {
   title: "Shipping & Delivery Policy | Zenvira",
@@ -150,12 +151,12 @@ export default function ShippingPage() {
             </p>
             <p className="text-sm text-gray-600 mt-2">
               For shipping-related queries, contact us at{" "}
-              <a
+              <Link
                 href="mailto:shipping@zenvira.com"
                 className="text-emerald-600 hover:underline"
               >
                 shipping@zenvira.com
-              </a>
+              </Link>
             </p>
           </div>
         </div>

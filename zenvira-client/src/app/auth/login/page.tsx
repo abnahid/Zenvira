@@ -1,5 +1,6 @@
 import LoginClient from "@/components/auth/LoginClient";
 import PageBanner from "@/components/PageBanner";
+import { Suspense } from "react";
 
 export const metadata = {
   title: "Login | Zenvira",
@@ -13,7 +14,9 @@ export default function LoginPage() {
         title="Login"
         breadcrumbs={[{ label: "Home", href: "/" }, { label: "Login" }]}
       />
-      <LoginClient />
+      <Suspense fallback={<div>Loading...</div>}>
+        <LoginClient />
+      </Suspense>
     </>
   );
 }

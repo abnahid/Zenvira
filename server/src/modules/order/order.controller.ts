@@ -1,4 +1,5 @@
 import type { Response } from "express";
+import { sendOrderConfirmationEmail } from "../../lib/email.js";
 import type { AuthRequest } from "../../shared/middleware/auth.middleware.js";
 import { orderService } from "./order.service.js";
 
@@ -9,15 +10,21 @@ export const orderController = {
       const isAdmin = req.user?.role === "admin";
 
       const page = Math.max(1, parseInt(req.query.page as string) || 1);
-      const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 10));
+      const limit = Math.min(
+        50,
+        Math.max(1, parseInt(req.query.limit as string) || 10),
+      );
       const status = req.query.status as string;
 
-      const targetSellerId = isAdmin && req.query.sellerId
-        ? (req.query.sellerId as string)
-        : sellerId;
+      const targetSellerId =
+        isAdmin && req.query.sellerId
+          ? (req.query.sellerId as string)
+          : sellerId;
 
       if (!targetSellerId) {
-        return res.status(400).json({ success: false, message: "Seller ID is required" });
+        return res
+          .status(400)
+          .json({ success: false, message: "Seller ID is required" });
       }
 
       const result = await orderService.getSellerOrders({
@@ -29,7 +36,9 @@ export const orderController = {
 
       res.json({ success: true, ...result });
     } catch (error) {
-      res.status(500).json({ success: false, message: "Failed to fetch seller orders" });
+      res
+        .status(500)
+        .json({ success: false, message: "Failed to fetch seller orders" });
     }
   },
 
@@ -40,13 +49,21 @@ export const orderController = {
       const isAdmin = req.user?.role === "admin";
 
       if (!sellerId) {
-        return res.status(401).json({ success: false, message: "Authentication required" });
+        return res
+          .status(401)
+          .json({ success: false, message: "Authentication required" });
       }
 
-      const result = await orderService.getSellerOrderById(orderId, sellerId, isAdmin);
+      const result = await orderService.getSellerOrderById(
+        orderId,
+        sellerId,
+        isAdmin,
+      );
 
       if (!result) {
-        return res.status(404).json({ success: false, message: "Order not found" });
+        return res
+          .status(404)
+          .json({ success: false, message: "Order not found" });
       }
 
       if (result.sellerItems.length === 0) {
@@ -58,7 +75,9 @@ export const orderController = {
 
       res.json({ success: true, data: result.order });
     } catch (error) {
-      res.status(500).json({ success: false, message: "Failed to fetch order" });
+      res
+        .status(500)
+        .json({ success: false, message: "Failed to fetch order" });
     }
   },
 
@@ -68,10 +87,18 @@ export const orderController = {
       const isAdmin = req.user?.role === "admin";
 
       const page = Math.max(1, parseInt(req.query.page as string) || 1);
-      const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 10));
+      const limit = Math.min(
+        50,
+        Math.max(1, parseInt(req.query.limit as string) || 10),
+      );
       const status = req.query.status as string;
 
-      const params: { page: number; limit: number; status?: string; customerId?: string } = { page, limit };
+      const params: {
+        page: number;
+        limit: number;
+        status?: string;
+        customerId?: string;
+      } = { page, limit };
       if (status) params.status = status;
 
       if (isAdmin && req.query.customerId) {
@@ -83,7 +110,9 @@ export const orderController = {
       const result = await orderService.getAll(params);
       res.json({ success: true, ...result });
     } catch (error) {
-      res.status(500).json({ success: false, message: "Failed to fetch orders" });
+      res
+        .status(500)
+        .json({ success: false, message: "Failed to fetch orders" });
     }
   },
 
@@ -96,16 +125,22 @@ export const orderController = {
       const order = await orderService.getById(id);
 
       if (!order) {
-        return res.status(404).json({ success: false, message: "Order not found" });
+        return res
+          .status(404)
+          .json({ success: false, message: "Order not found" });
       }
 
       if (!isAdmin && order.customerId !== userId) {
-        return res.status(403).json({ success: false, message: "Access denied" });
+        return res
+          .status(403)
+          .json({ success: false, message: "Access denied" });
       }
 
       res.json({ success: true, data: order });
     } catch (error) {
-      res.status(500).json({ success: false, message: "Failed to fetch order" });
+      res
+        .status(500)
+        .json({ success: false, message: "Failed to fetch order" });
     }
   },
 
@@ -122,7 +157,9 @@ export const orderController = {
       } = req.body;
 
       if (!userId) {
-        return res.status(401).json({ success: false, message: "Authentication required" });
+        return res
+          .status(401)
+          .json({ success: false, message: "Authentication required" });
       }
 
       if (!shippingName || !shippingPhone || !shippingEmail || !address) {
@@ -141,7 +178,9 @@ export const orderController = {
       }
 
       if (!items || !Array.isArray(items) || items.length === 0) {
-        return res.status(400).json({ success: false, message: "Order items are required" });
+        return res
+          .status(400)
+          .json({ success: false, message: "Order items are required" });
       }
 
       const order = await orderService.create({
@@ -156,7 +195,12 @@ export const orderController = {
 
       res.status(201).json({ success: true, data: order });
     } catch (error: any) {
-      res.status(400).json({ success: false, message: error.message || "Failed to create order" });
+      res
+        .status(400)
+        .json({
+          success: false,
+          message: error.message || "Failed to create order",
+        });
     }
   },
 
@@ -167,7 +211,13 @@ export const orderController = {
       const sellerId = req.user?.id;
       const isAdmin = req.user?.role === "admin";
 
-      const validStatuses = ["placed", "confirmed", "shipped", "delivered", "cancelled"];
+      const validStatuses = [
+        "placed",
+        "confirmed",
+        "shipped",
+        "delivered",
+        "cancelled",
+      ];
       if (!status || !validStatuses.includes(status)) {
         return res.status(400).json({
           success: false,
@@ -177,20 +227,31 @@ export const orderController = {
 
       const order = await orderService.getById(id);
       if (!order) {
-        return res.status(404).json({ success: false, message: "Order not found" });
+        return res
+          .status(404)
+          .json({ success: false, message: "Order not found" });
       }
 
       if (!isAdmin && sellerId) {
         const hasSellerItems = await orderService.hasSellerItems(id, sellerId);
         if (!hasSellerItems) {
-          return res.status(403).json({ success: false, message: "Access denied" });
+          return res
+            .status(403)
+            .json({ success: false, message: "Access denied" });
         }
       }
 
       const updatedOrder = await orderService.updateStatus(id, status);
+
+      if (status === "confirmed" && updatedOrder) {
+        void sendOrderConfirmationEmail(updatedOrder as any);
+      }
+
       res.json({ success: true, data: updatedOrder });
     } catch (error) {
-      res.status(500).json({ success: false, message: "Failed to update order status" });
+      res
+        .status(500)
+        .json({ success: false, message: "Failed to update order status" });
     }
   },
 
@@ -209,13 +270,20 @@ export const orderController = {
 
       const order = await orderService.getById(id);
       if (!order) {
-        return res.status(404).json({ success: false, message: "Order not found" });
+        return res
+          .status(404)
+          .json({ success: false, message: "Order not found" });
       }
 
-      const updatedOrder = await orderService.updatePaymentStatus(id, paymentStatus);
+      const updatedOrder = await orderService.updatePaymentStatus(
+        id,
+        paymentStatus,
+      );
       res.json({ success: true, data: updatedOrder });
     } catch (error) {
-      res.status(500).json({ success: false, message: "Failed to update payment status" });
+      res
+        .status(500)
+        .json({ success: false, message: "Failed to update payment status" });
     }
   },
 
@@ -228,11 +296,15 @@ export const orderController = {
       const order = await orderService.getById(id);
 
       if (!order) {
-        return res.status(404).json({ success: false, message: "Order not found" });
+        return res
+          .status(404)
+          .json({ success: false, message: "Order not found" });
       }
 
       if (!isAdmin && order.customerId !== userId) {
-        return res.status(403).json({ success: false, message: "Access denied" });
+        return res
+          .status(403)
+          .json({ success: false, message: "Access denied" });
       }
 
       if (!isAdmin && order.status !== "placed") {
@@ -243,9 +315,15 @@ export const orderController = {
       }
 
       const updatedOrder = await orderService.updateStatus(id, "cancelled");
-      res.json({ success: true, data: updatedOrder, message: "Order cancelled successfully" });
+      res.json({
+        success: true,
+        data: updatedOrder,
+        message: "Order cancelled successfully",
+      });
     } catch (error) {
-      res.status(500).json({ success: false, message: "Failed to cancel order" });
+      res
+        .status(500)
+        .json({ success: false, message: "Failed to cancel order" });
     }
   },
 
@@ -258,12 +336,16 @@ export const orderController = {
       const order = await orderService.getById(id);
 
       if (!order) {
-        return res.status(404).json({ success: false, message: "Order not found" });
+        return res
+          .status(404)
+          .json({ success: false, message: "Order not found" });
       }
 
       if (!isAdmin) {
         if (order.customerId !== userId) {
-          return res.status(403).json({ success: false, message: "Access denied" });
+          return res
+            .status(403)
+            .json({ success: false, message: "Access denied" });
         }
         if (order.status !== "placed") {
           return res.status(400).json({
@@ -276,7 +358,9 @@ export const orderController = {
       await orderService.delete(id);
       res.json({ success: true, message: "Order deleted successfully" });
     } catch (error) {
-      res.status(500).json({ success: false, message: "Failed to delete order" });
+      res
+        .status(500)
+        .json({ success: false, message: "Failed to delete order" });
     }
   },
 };

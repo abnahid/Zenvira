@@ -1,4 +1,5 @@
 import PageBanner from "@/components/PageBanner";
+import Link from "next/link";
 
 export const metadata = {
   title: "Tax Information | Zenvira",
@@ -73,12 +74,12 @@ export default function TaxPage() {
           </p>
           <p className="text-gray-600 mb-6">
             Email:{" "}
-            <a
+            <Link
               href="mailto:tax@zenvira.com"
               className="text-emerald-600 hover:underline"
             >
               tax@zenvira.com
-            </a>
+            </Link>
           </p>
 
           <h2 className="text-2xl font-semibold mt-8 mb-4">Digital Invoice</h2>
@@ -146,12 +147,12 @@ export default function TaxPage() {
           <ul className="list-disc list-inside text-gray-600 mb-6 space-y-2">
             <li>
               Email:{" "}
-              <a
+              <Link
                 href="mailto:business@zenvira.com"
                 className="text-emerald-600 hover:underline"
               >
                 business@zenvira.com
-              </a>
+              </Link>
             </li>
             <li>Phone: +1-800-ZENVIRA (Ext. Business Sales)</li>
           </ul>
@@ -184,12 +185,12 @@ export default function TaxPage() {
             </p>
             <p className="text-sm text-gray-600 mt-2">
               Email:{" "}
-              <a
+              <Link
                 href="mailto:tax@zenvira.com"
                 className="text-emerald-600 hover:underline"
               >
                 tax@zenvira.com
-              </a>
+              </Link>
             </p>
           </div>
         </div>

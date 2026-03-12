@@ -55,7 +55,9 @@ export default function OrdersClient() {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -183,14 +185,14 @@ export default function OrdersClient() {
 
   if (authLoading || !user) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="text-center">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">My Orders</h1>
         <p className="text-muted-foreground">
@@ -414,7 +416,9 @@ export default function OrdersClient() {
                       onClick={() => handleCancelOrder(order.id)}
                       disabled={cancellingOrderId === order.id}
                     >
-                      {cancellingOrderId === order.id ? "Cancelling..." : "Cancel Order"}
+                      {cancellingOrderId === order.id
+                        ? "Cancelling..."
+                        : "Cancel Order"}
                     </Button>
                   )}
                 </div>

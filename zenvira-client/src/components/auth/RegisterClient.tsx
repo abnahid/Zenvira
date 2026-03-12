@@ -39,12 +39,15 @@ const RegisterClient = () => {
     setError(null);
 
     try {
-      // Use full URL for callback to ensure redirect to client, not server
-      const callbackURL = `${window.location.origin}/`;
-      await authClient.signIn.social({
+      const { error } = await authClient.signIn.social({
         provider: "google",
-        callbackURL,
+        callbackURL: "/",
       });
+
+      if (error) {
+        setError(error.message || "Google sign up failed");
+        setGoogleLoading(false);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Google sign up failed");
       setGoogleLoading(false);

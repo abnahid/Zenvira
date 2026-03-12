@@ -171,7 +171,7 @@ export default function OrderDetailsClient({ orderId }: { orderId: string }) {
 
   if (authLoading || !user) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="text-center">Loading...</div>
       </div>
     );
@@ -179,7 +179,7 @@ export default function OrderDetailsClient({ orderId }: { orderId: string }) {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           <p className="mt-4 text-muted-foreground">Loading order details...</p>
@@ -190,7 +190,7 @@ export default function OrderDetailsClient({ orderId }: { orderId: string }) {
 
   if (error || !order) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-destructive mb-4">
@@ -208,7 +208,7 @@ export default function OrderDetailsClient({ orderId }: { orderId: string }) {
   const statusSteps = getStatusSteps(order.status);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-6">
         <Button variant="outline" onClick={() => router.push("/orders")}>
           ← Back to Orders

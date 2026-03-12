@@ -88,41 +88,41 @@ export default function Navbar({ className }: { className?: string }) {
           <div className="mx-auto flex max-w-7xl items-center justify-between px-4">
             <p>
               Free Shipping
-              <a
-                href="#"
+              <Link
+                href="/orders"
                 className="text-primary font-semibold hover:underline ml-1"
               >
                 Orders From All Item
-              </a>
+              </Link>
             </p>
 
             <div className="flex items-center gap-4">
               {/* Social Icons */}
               <div className="flex items-center gap-3">
-                <a
+                <Link
                   href="#"
                   className="text-primary hover:text-primary/80 transition"
                 >
                   <FaFacebookF size={12} />
-                </a>
-                <a
+                </Link>
+                <Link
                   href="#"
                   className="text-primary hover:text-primary/80 transition"
                 >
                   <FaTwitter size={12} />
-                </a>
-                <a
+                </Link>
+                <Link
                   href="#"
                   className="text-primary hover:text-primary/80 transition"
                 >
                   <FaVimeoV size={12} />
-                </a>
-                <a
+                </Link>
+                <Link
                   href="#"
                   className="text-primary hover:text-primary/80 transition"
                 >
                   <FaPinterestP size={12} />
-                </a>
+                </Link>
               </div>
 
               <span className="flex items-center gap-1">
@@ -566,41 +566,41 @@ export default function Navbar({ className }: { className?: string }) {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 ">
           <p>
             Free Shipping
-            <a
-              href="#"
+            <Link
+              href="/orders"
               className="text-primary font-semibold hover:underline ml-1"
             >
               Orders From All Item
-            </a>
+            </Link>
           </p>
 
           <div className="flex items-center gap-4">
             {/* Social Icons */}
             <div className="flex items-center gap-3">
-              <a
+              <Link
                 href="#"
                 className="text-primary hover:text-primary/80 transition"
               >
                 <FaFacebookF size={12} />
-              </a>
-              <a
+              </Link>
+              <Link
                 href="#"
                 className="text-primary hover:text-primary/80 transition"
               >
                 <FaTwitter size={12} />
-              </a>
-              <a
+              </Link>
+              <Link
                 href="#"
                 className="text-primary hover:text-primary/80 transition"
               >
                 <FaVimeoV size={12} />
-              </a>
-              <a
+              </Link>
+              <Link
                 href="#"
                 className="text-primary hover:text-primary/80 transition"
               >
                 <FaPinterestP size={12} />
-              </a>
+              </Link>
             </div>
 
             <span className="flex items-center gap-1">

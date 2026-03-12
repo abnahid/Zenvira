@@ -1,4 +1,5 @@
 import PageBanner from "@/components/PageBanner";
+import Link from "next/link";
 
 export const metadata = {
   title: "Medical Disclaimer | Zenvira",
@@ -129,12 +130,12 @@ export default function DisclaimerPage() {
             </p>
             <p className="text-sm text-gray-600 mt-2">
               For product safety concerns, contact us at{" "}
-              <a
+              <Link
                 href="mailto:safety@zenvira.com"
                 className="text-red-600 hover:underline"
               >
                 safety@zenvira.com
-              </a>
+              </Link>
             </p>
           </div>
         </div>
